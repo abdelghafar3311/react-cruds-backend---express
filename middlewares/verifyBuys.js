@@ -3,7 +3,7 @@ const { secreteKey } = require("../values/env");
 // for product verify
 const { validateProduct } = require("../validations/buys.valid");
 // Customer data
-const { Customer } = require("../modules/Customer_Module")
+const { Customer } = require("../modules/Customer/Customer_Module")
 // services
 const { calculateTotalPay } = require("../services/productService");
 // verify token

@@ -9,7 +9,8 @@ const ProfileSchema = new mongoose.Schema({
         required: true
     },
     Avatar: {
-        type: String
+        type: String,
+        default: "images/customer.png"
     },
     phone: {
         type: String,

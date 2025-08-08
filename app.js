@@ -25,6 +25,7 @@ const SellsProducts = require("./routes/product/sells");
 const BuysProducts = require("./routes/product/buys");
 const DeleteProducts = require("./routes/product/delete");
 const MoneySystem = require("./routes/money/money")
+const AuthOwner = require("./routes/owner/auth/auth")
 // Routes
 app.use("/api", test);
 app.use("/api/customer", customerRoutes);
@@ -34,7 +35,7 @@ app.use("/api/sells", SellsProducts);
 app.use("/api/buys", BuysProducts);
 app.use("/api/delete_product", DeleteProducts);
 app.use("/api/money/control", MoneySystem);
-
+app.use("/api/owner/auth", AuthOwner)
 
 // middlewares Error handler
 app.use(ErrorNotFound);

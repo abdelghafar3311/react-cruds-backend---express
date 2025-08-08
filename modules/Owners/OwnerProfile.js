@@ -14,7 +14,7 @@ const ProfileSchema = new mongoose.Schema({
     },
     Avatar: {
         type: String,
-        required: true,
+        default: "images/owner.png",
         trim: true
     },
     phone: {
