@@ -43,6 +43,7 @@ router.post("/register", async (req, res) => {
         return res.status(201).json({ ...other, token })
     } catch (error) {
         console.error(error);
+        console.log(req.body);
         res.status(500).json({ message: "Internal Server Error" })
     }
 })

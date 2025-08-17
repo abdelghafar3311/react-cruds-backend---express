@@ -33,7 +33,6 @@ const ProfileSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        minLength: 6,
         trim: true
     },
     rating: {

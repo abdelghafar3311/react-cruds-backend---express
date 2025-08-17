@@ -16,24 +16,47 @@ const RoomSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    size: {
+    length: {
         type: Number,
-        required: true
+        min: 1,
+        max: 100,
+        default: 5
     },
+    width: {
+        type: Number,
+        min: 1,
+        max: 100,
+        default: 4
+    }
+    ,
     description: {
         type: String,
-        required: true,
         trim: true
     },
     price: {
         type: Number,
-        required: true,
         min: 1
+    }, isUsed: {
+        type: Boolean,
+        default: false
     },
     Area_Id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Area",
         required: true
+    },
+    isAlarm: {
+        type: Boolean,
+        default: false
+    },
+    AlarmMessage: {
+        type: String,
+        default: ""
+    }, AlarmToken: {
+        type: String,
+        default: ""
+    }, AlarmDate: {
+        type: Date
     },
     Owner_Id: {
         type: mongoose.Schema.Types.ObjectId,

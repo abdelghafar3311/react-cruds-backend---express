@@ -6,20 +6,8 @@ const { validateUpdateProduct } = require("../validations/updateProduct.valid");
 // data Modules
 const { Product } = require("../modules/Product/Product")
 const { Customer } = require("../modules/Customer/Customer_Module")
-const { Report } = require("../modules/Report/Report")
 // verify token
-const verifyToken = (req, res, next) => {
-    const token = req.headers.token || req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(400).json({ message: "Token is not found, please provide a token" });
-
-    try {
-        const decode = jwt.verify(token, secreteKey);
-        req.customer = decode;
-        next();
-    } catch (error) {
-        return res.status(401).json({ message: "invalid token" });
-    }
-}
+const { verifyToken } = require("./verifyToken");
 // verify for get products
 const verifyTokenForProductsGet = async (req, res, next) => {
     verifyToken(req, res, async () => {

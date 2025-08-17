@@ -9,6 +9,8 @@ const GetRequest = require("./middlewares/getRequest");
 app.use(cors());
 // use json in express
 app.use(express.json())
+// use urlencoded in express
+app.use(express.urlencoded({ extended: true }));
 // exports values #env
 const { PORT, HOST } = require("./values/env");
 // connection data base
@@ -25,7 +27,10 @@ const SellsProducts = require("./routes/product/sells");
 const BuysProducts = require("./routes/product/buys");
 const DeleteProducts = require("./routes/product/delete");
 const MoneySystem = require("./routes/money/money")
-const AuthOwner = require("./routes/owner/auth/auth")
+const AuthOwner = require("./routes/owner/auth/auth");
+const ProfileOfOwner = require("./routes/owner/profile/profile");
+const UploadOwnerAvatar = require("./routes/owner/profile/avatar");
+const AreaRoute = require("./routes/Area/area")
 // Routes
 app.use("/api", test);
 app.use("/api/customer", customerRoutes);
@@ -36,7 +41,9 @@ app.use("/api/buys", BuysProducts);
 app.use("/api/delete_product", DeleteProducts);
 app.use("/api/money/control", MoneySystem);
 app.use("/api/owner/auth", AuthOwner)
-
+app.use("/api/owner/profile", ProfileOfOwner);
+app.use("/api/owner/profile/image", UploadOwnerAvatar);
+app.use("/api/owner/area", AreaRoute)
 // middlewares Error handler
 app.use(ErrorNotFound);
 app.use(CatchError);

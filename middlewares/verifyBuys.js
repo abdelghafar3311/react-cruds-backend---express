@@ -7,18 +7,7 @@ const { Customer } = require("../modules/Customer/Customer_Module")
 // services
 const { calculateTotalPay } = require("../services/productService");
 // verify token
-const verifyToken = (req, res, next) => {
-    const token = req.headers.token || req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(400).json({ message: "Token is not found, please provide a token" });
-
-    try {
-        const decode = jwt.verify(token, secreteKey);
-        req.customer = decode;
-        next();
-    } catch (error) {
-        return res.status(401).json({ message: "invalid token" });
-    }
-}
+const { verifyToken } = require("./verifyToken");
 
 // verify for buy product
 const verifyTokenForProductBuy = async (req, res, next) => {

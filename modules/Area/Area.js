@@ -22,11 +22,26 @@ const AreaSchema = new mongoose.Schema({
     maxRooms: {
         type: Number,
         min: 1,
+        max: 8, // limit of rooms
         required: true
     },
     rating: {
         type: Number,
         default: 0
+    },
+    // here alarms
+    isAlarm: {
+        type: Boolean,
+        default: false
+    },
+    AlarmMessage: {
+        type: String,
+        default: ""
+    }, AlarmToken: {
+        type: String,
+        default: ""
+    }, AlarmDate: {
+        type: Date
     },
     Owner_Id: {
         type: mongoose.Schema.Types.ObjectId,
@@ -36,6 +51,8 @@ const AreaSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+AreaSchema.index({ nameArea: 1, Owner_Id: 1 }, { unique: true });
 
 const Area = mongoose.model("Area", AreaSchema);
 
