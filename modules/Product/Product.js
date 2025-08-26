@@ -50,23 +50,10 @@ const ProductSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Customer",
         required: true
-    },
-    RentedRoom_id: {
+    }, Rental_Id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "RentedRoom"
-    },
-    isBlocked: {
-        type: Boolean,
-        default: false
-    },
-    BlockedMessage: {
-        type: String,
-        trim: true,
-        default: ""
-    },
-    isSold: {
-        type: Boolean,
-        default: false
+        ref: "Rental",
+        required: false
     }
 }, { timestamps: true })
 // this make name product is unique only in the same customer

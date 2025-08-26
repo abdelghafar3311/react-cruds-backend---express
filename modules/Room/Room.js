@@ -16,7 +16,7 @@ const RoomSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    length: {
+    length: { // length of the room in meters
         type: Number,
         min: 1,
         max: 100,
@@ -36,6 +36,10 @@ const RoomSchema = new mongoose.Schema({
     price: {
         type: Number,
         min: 1
+    }, Duration: {
+        type: String,
+        enum: ["y", "M", "d", "h", "w", "m", "s"],
+        default: "M"
     }, isUsed: {
         type: Boolean,
         default: false
@@ -45,18 +49,9 @@ const RoomSchema = new mongoose.Schema({
         ref: "Area",
         required: true
     },
-    isAlarm: {
+    isDeleted: {
         type: Boolean,
         default: false
-    },
-    AlarmMessage: {
-        type: String,
-        default: ""
-    }, AlarmToken: {
-        type: String,
-        default: ""
-    }, AlarmDate: {
-        type: Date
     },
     Owner_Id: {
         type: mongoose.Schema.Types.ObjectId,

@@ -38,7 +38,7 @@ router.post("/register", async (req, res) => {
         });
 
         const result = await customer.save();
-        const token = CreateToken({ id: customer._id, username: customer.username, email: customer.email }, "1h")
+        const token = CreateToken({ id: customer._id, username: customer.username, email: customer.email, type: "customer" }, "1h")
         const { password, ...other } = result._doc;
         return res.status(201).json({ ...other, token })
 
@@ -74,7 +74,7 @@ router.post("/login", async (req, res) => {
         const comparePassword = await bcrypt.compare(req.body.password, customer.password);
         if (!comparePassword) return res.status(400).json({ message: "The email or password is wrong" });
         // create token
-        const token = CreateToken({ id: customer._id, username: customer.username, email: customer.email })
+        const token = CreateToken({ id: customer._id, username: customer.username, email: customer.email, type: "customer" }, "1h");
         // take password from data
         const { password, ...other } = customer._doc;
         // send response

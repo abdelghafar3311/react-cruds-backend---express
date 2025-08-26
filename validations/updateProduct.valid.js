@@ -11,7 +11,8 @@ const validateUpdateProduct = (obj) => {
         gain: Joi.number().min(1),
         taxes: Joi.number().min(0).default(0),
         ads: Joi.number().min(0).default(0),
-        discount: Joi.number().min(0).default(0)
+        discount: Joi.number().min(0).default(0),
+        Rental_Id: Joi.string(),
     });
 
     return schema.validate(obj);

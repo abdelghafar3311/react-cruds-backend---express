@@ -16,6 +16,9 @@ const { PORT, HOST } = require("./values/env");
 // connection data base
 const connectDB = require("./config/connectDB");
 connectDB();
+// start cron job
+const startCronJob = require("./cronServer");
+startCronJob();
 // Get Request middleware
 app.use(GetRequest);
 // GET routes path
@@ -30,7 +33,9 @@ const MoneySystem = require("./routes/money/money")
 const AuthOwner = require("./routes/owner/auth/auth");
 const ProfileOfOwner = require("./routes/owner/profile/profile");
 const UploadOwnerAvatar = require("./routes/owner/profile/avatar");
-const AreaRoute = require("./routes/Area/area")
+const AreaRoute = require("./routes/Area/area");
+const RoomRoutes = require("./routes/Room/room");
+const RentalRoutes = require("./routes/Rental/rental");
 // Routes
 app.use("/api", test);
 app.use("/api/customer", customerRoutes);
@@ -43,7 +48,9 @@ app.use("/api/money/control", MoneySystem);
 app.use("/api/owner/auth", AuthOwner)
 app.use("/api/owner/profile", ProfileOfOwner);
 app.use("/api/owner/profile/image", UploadOwnerAvatar);
-app.use("/api/owner/area", AreaRoute)
+app.use("/api/owner/area", AreaRoute);
+app.use("/api/room", RoomRoutes);
+app.use("/api/rental", RentalRoutes);
 // middlewares Error handler
 app.use(ErrorNotFound);
 app.use(CatchError);

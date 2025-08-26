@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { secreteKey, secreteKeyDelete } = require("../values/env");
+const { secreteKey, secreteKeyDelete, secreteKeyRental } = require("../values/env");
 
 const CreateToken = (data, expire = "3h") => {
     return jwt.sign(data, secreteKey, {
@@ -14,7 +14,14 @@ const CreateDeleteToken = (data, expire) => {
     })
 }
 
+const CreateTokenRental = (data, expire = "2d") => {
+    return jwt.sign(data, secreteKeyRental, {
+        expiresIn: expire
+    })
+}
+
 module.exports = {
     CreateToken,
-    CreateDeleteToken
+    CreateDeleteToken,
+    CreateTokenRental
 };

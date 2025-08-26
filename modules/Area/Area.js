@@ -30,18 +30,9 @@ const AreaSchema = new mongoose.Schema({
         default: 0
     },
     // here alarms
-    isAlarm: {
+    isDeleted: {
         type: Boolean,
         default: false
-    },
-    AlarmMessage: {
-        type: String,
-        default: ""
-    }, AlarmToken: {
-        type: String,
-        default: ""
-    }, AlarmDate: {
-        type: Date
     },
     Owner_Id: {
         type: mongoose.Schema.Types.ObjectId,

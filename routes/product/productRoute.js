@@ -38,7 +38,8 @@ router.put("/:id", verifyTokenForProductPut, async (req, res) => {
             gain: req.body.gain,
             taxes: req.body.taxes,
             ads: req.body.ads,
-            discount: req.body.discount
+            discount: req.body.discount,
+            Rental_Id: req.body.Rental_Id
         };
         if (req.updateMoneySystem) {
             await Customer.findByIdAndUpdate(req.customer.id, {

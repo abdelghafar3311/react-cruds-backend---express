@@ -4,6 +4,7 @@ const { secreteKey } = require("../values/env");
 const { validateProduct } = require("../validations/buys.valid");
 // Customer data
 const { Customer } = require("../modules/Customer/Customer_Module")
+const Room = require("../modules/Room/Room");
 // services
 const { calculateTotalPay } = require("../services/productService");
 // verify token
@@ -30,6 +31,15 @@ const verifyTokenForProductBuy = async (req, res, next) => {
             if (pay > findId.money) {
                 return res.status(422).json({ message: "your money is not enough" })
             }
+            // check room found
+            const room = await Room.findById(req.body.Room_id);
+            if (!room) {
+                return res.status(404).json({ message: "Room not found" });
+            }
+            // check room is used
+            // if (room.isUsed) { // update in rental
+            //     return res.status(400).json({ message: "Room is currently in use and cannot be used for buying products" });
+            // }
 
             // create objects
             req.money = findId.money - pay;
@@ -48,11 +58,35 @@ const verifyTokenForProductsBuy = async (req, res, next) => {
     verifyToken(req, res, async () => {
         try {
             const data = req.body;
+            // 1. validate syntax
             for (const item of data) {
                 const { error } = validateProduct(item);
                 if (error) {
-                    return res.status(400).json({ message: "syntax is wrong", error: error.details[0].message });
+                    return res.status(400).json({
+                        message: "syntax is wrong",
+                        error: error.details[0].message
+                    });
                 }
+            }
+
+            // 2. fetch all rooms in one query
+            const roomIds = data.map(item => item.Room_id);
+            const rooms = await Room.find({ _id: { $in: roomIds } }).lean();
+
+            // 3. make fast lookup map
+            const roomMap = new Map(rooms.map(r => [r._id.toString(), r]));
+
+            // 4. validate rooms existence and status
+            for (const item of data) {
+                const room = roomMap.get(item.Room_id.toString());
+                if (!room) {
+                    return res.status(404).json({ message: "Room not found" });
+                }
+                // if (room.isUsed) { // update in rental
+                //     return res.status(400).json({
+                //         message: "Room is currently in use and cannot be used for buying products"
+                //     });
+                // }
             }
             // check id
             const findId = await Customer.findById(req.customer.id);

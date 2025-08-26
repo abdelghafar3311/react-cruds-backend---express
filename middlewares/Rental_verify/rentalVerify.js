@@ -1,0 +1,347 @@
+const { verifyToken } = require("../verifyToken");
+const { validPostRental, validPatchRental, validReqRentalAccept } = require("../../validations/rental.valid");
+// modules
+const Rented = require("../../modules/Rental/Rental");
+const { Customer } = require("../../modules/Customer/Customer_Module");
+const Room = require("../../modules/Room/Room");
+const Area = require("../../modules/Area/Area");
+const Owner = require("../../modules/Owners/Owner");
+const RentalRequest = require("../../modules/Rental/RentalRequest");
+const mongoose = require("mongoose");
+// post verify rental
+const VerifyPostRental = (req, res, next) => {
+    verifyToken(req, res, async () => {
+        try {
+            // validate
+            const { error, value } = validPostRental(req.body);
+            if (error) {
+                return res.status(400).json({ message: error.details[0].message });
+            }
+            req.body = value;
+            // check customer
+            const customer = await Customer.findById(req.customer.id);
+            if (!customer) {
+                return res.status(403).json({ message: "You are not allowed to post a rental, please sign in first." })
+            }
+            // check room
+            const room = await Room.findById(req.body.Room_Id);
+            if (!room) {
+                return res.status(404).json({ message: "Room not found" });
+            }
+            if (room.isDeleted) {
+                return res.status(403).json({ message: "Room will delete" });
+            }
+            // check area
+            const area = await Area.findById(room.Area_Id);
+            if (!area) {
+                return res.status(404).json({ message: "Area not found" });
+            }
+            if (area.isDeleted) {
+                return res.status(403).json({ message: "Area will delete" });
+            }
+            // check owner
+            const owner = await Owner.findById(req.body.Owner_Id);
+            if (!owner) {
+                return res.status(404).json({ message: "Owner not found" });
+            }
+            // check owner has this room
+            if (owner._id.toString() !== room.Owner_Id.toString()) {
+                return res.status(403).json({ message: "You are not allowed to post a rental for this room" });
+            }
+            // check if room is already rented
+            const rental = await Rented.findOne({ Room_Id: room._id });
+            if (rental && rental.isExpires) {
+                return res.status(403).json({ message: "Room is already rented" });
+            }
+            // check customer money is enough
+            if (customer.money < room.price * +req.body.timeNumber) {
+                return res.status(403).json({ message: "You don't have enough money to post a rental" });
+            }
+            const Money = room.price * +req.body.timeNumber;
+            // add date
+            const addDate = `${req.body.timeNumber}${req.body.timeType}`
+            // attach values to request object
+            req.customer = customer;
+            req.area = area;
+            req.room = room;
+            req.owner = owner;
+            req.AddDate = addDate;
+            req.money = newMoney;
+            next();
+        } catch (error) {
+            console.error("Middleware error:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    });
+}
+
+// verify get all rental request
+const verifyGetAllRentalsRequest = (req, res, next) => {
+    verifyToken(req, res, async () => {
+        try {
+            // check owner
+            const owner = await Owner.findById(req.owner.id);
+            if (!owner) {
+                return res.status(403).json({ message: "You Not Authorized" });
+            }
+
+            // attach values to request object
+            req.owner = owner;
+            next();
+        } catch (error) {
+            console.error("Middleware error:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    });
+}
+
+// accept / reject request rental
+const VerifyReqRentalAccept = (req, res, next) => {
+    verifyToken(req, res, async () => {
+        try {
+            // joi check
+            const { error, value } = validReqRentalAccept(req.body);
+            if (error) {
+                return res.status(400).json({ message: error.details[0].message });
+            }
+            req.body = value;
+            // check owner
+            const owner = await Owner.findById(req.owner.id);
+            if (!owner) {
+                return res.status(403).json({ message: "You Not Authorized" });
+            }
+            // check id params is object id
+            if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+                return res.status(400).json({ message: "Invalid rental ID." });
+            }
+            // check request
+            const request = await RentalRequest.findById(req.params.id);
+            if (!request) {
+                return res.status(404).json({ message: "Request not found" });
+            }
+            // check owner has this request
+            if (owner._id.toString() !== request.Owner_Id.toString()) {
+                return res.status(403).json({ message: "You are not allowed to accept / reject this request" });
+            }
+            // get rental from request
+            const rental = await Rented.findById(request.Rental_Id);
+            if (!rental) {
+                // delete request
+                await RentalRequest.findByIdAndDelete(request._id);
+                return res.status(404).json({ message: "Rental not found" });
+            }
+            // attach values to request object
+            req.ownerDB = owner;
+            req.request = request;
+            req.rental = rental;
+            next();
+        } catch (error) {
+            console.error("Middleware error:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    })
+}
+
+// verify patch rental
+const VerifyPatchRental = (req, res, next) => {
+    verifyToken(req, res, async () => {
+        try {
+            // validate
+            const { error, value } = validPatchRental(req.body);
+            if (error) {
+                return res.status(400).json({ message: error.details[0].message });
+            }
+            // check customer
+            const customer = await Customer.findById(req.customer.id);
+            if (!customer) {
+                return res.status(403).json({ message: "You are not allowed to patch a rental, please sign in first." })
+            }
+            // check id params is object id
+            if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+                return res.status(400).json({ message: "Invalid rental ID." });
+            }
+            // check rental
+            const rental = await Rented.findById(req.params.id);
+            if (!rental) {
+                return res.status(404).json({ message: "Rental not found" });
+            }
+            // check rental isDeleted false
+            if (rental.isDeleted) {
+                return res.status(403).json({ message: "Rental will delete" });
+            }
+            // check owner
+            const owner = await Owner.findById(rental.Owner_Id);
+            if (!owner) {
+                return res.status(404).json({ message: "Owner not found" });
+            }
+            // check owner has this room
+            if (owner._id.toString() !== rental.Owner_Id.toString()) {
+                return res.status(403).json({ message: "You are not allowed to patch a rental for this room" });
+            }
+            // check rental is expired
+            if (!rental.isExpires) {
+                return res.status(403).json({ message: "Rental is not expired" });
+            }
+            // check room
+            const room = await Room.findById(rental.Room_Id);
+            if (!room) {
+                return res.status(404).json({ message: "Room not found" });
+            }
+            if (room.isDeleted) {
+                return res.status(403).json({ message: "Room will delete" });
+            }
+            if (customer.money < room.price * +req.body.timeNumber) {
+                return res.status(403).json({ message: "You don't have enough money to patch a rental" });
+            }
+            const area = await Area.findById(room.Area_Id);
+            if (!area) {
+                return res.status(404).json({ message: "Area not found" });
+            }
+            if (area.isDeleted) {
+                return res.status(403).json({ message: "Area will delete" });
+            }
+            const newMoney = customer.money - room.price * +req.body.timeNumber;
+            // attach values to request object 
+            req.body = value;
+            req.customer = customer;
+            req.owner = owner;
+            req.rental = rental;
+            req.room = room;
+            req.money = newMoney;
+            req.area = area;
+            next();
+        } catch (error) {
+            console.error("Middleware error:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    });
+}
+
+// verify get rentals for owner and customer
+const verifyGetAllRentals = async (req, res, next) => {
+    verifyToken(req, res, async () => {
+        try {
+            // check user
+            let rentals;
+            let profile;
+
+            if (req.user.type === "customer") { // customer
+                // find customer
+                profile = await Customer.findById(req.user.id);
+                if (!profile) {
+                    return res.status(403).json({
+                        message: "You are not allowed to get rentals, please sign in first.",
+                    });
+                }
+                // find all rentals for this customer
+                rentals = await Rented.find({ Customer_Id: profile._id })
+                    .populate("Room_Id", "startDate endDate isExpires")
+                    .populate("Owner_Id", "nameOwner")
+                    .populate("Area_Id", "nameArea")
+                    .lean();
+            } else if (req.user.type === "owner") { // owner
+                profile = await Owner.findById(req.user.id);
+                if (!profile) {
+                    return res.status(404).json({ message: "Owner not found" });
+                }
+                // find all rentals for this owner
+                rentals = await Rented.find({ Owner_Id: profile._id })
+                    .populate("Room_Id", "startDate endDate isExpires")
+                    .populate("Area_Id", "nameArea")
+                    .populate("Customer_Id", "username")
+                    .lean();
+            } else { // invalid user
+                return res.status(403).json({ message: "Invalid user type" });
+            }
+            // check rentals
+            if (!rentals || rentals.length === 0) {
+                return res.status(404).json({ message: "No rentals found" });
+            }
+            // attach rentals and profile to req
+            req.rentals = rentals;
+            req.profile = profile;
+            next();
+        } catch (error) {
+            console.error("Middleware error:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    });
+};
+
+// verify delete rental with customer
+const VerifyDeleteCustomerRental = async (req, res, next) => {
+    verifyToken(req, res, async () => {
+        try {
+            //  check customer
+            const customer = await Customer.findById(req.customer.id);
+            if (!customer) {
+                return res.status(403).json({ message: "You are not allowed to delete a rental, please sign in first." })
+            }
+            // check rental from params
+            const rental = await Rented.findById(req.params.id);
+            if (!rental) {
+                return res.status(404).json({ message: "Rental not found" });
+            }
+
+            // check customer has this room
+            if (customer._id.toString() !== rental.Owner_Id.toString()) {
+                return res.status(403).json({ message: "You are not allowed to delete a rental for this room" });
+            }
+            // check rental is expired
+            if (!rental.isExpires) {
+                return res.status(403).json({ message: "Rental is not expired" });
+            }
+            // attach values to request object 
+            req.customer = customer;
+            req.rental = rental;
+            next();
+        } catch (error) {
+            console.error("Middleware error:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    });
+}
+
+// verify delete from Owner
+const VerifyDeleteOwnerRental = async (req, res, next) => {
+    verifyToken(req, res, async () => {
+        try {
+            // check owner
+            const owner = await Owner.findById(req.owner.id);
+            if (!owner) {
+                return res.status(404).json({ message: "Owner not found" });
+            }
+            // check rental from params
+            const rental = await Rented.findById(req.params.id);
+            if (!rental) {
+                return res.status(404).json({ message: "Rental not found" });
+            }
+            // check owner has this room
+            if (owner._id.toString() !== rental.Owner_Id.toString()) {
+                return res.status(403).json({ message: "You are not allowed to delete a rental for this room" });
+            }
+            // check rental isDeleted false
+            if (rental.isDeleted) {
+                return res.status(403).json({ message: "Rental will delete" });
+            }
+            // attach values to request object 
+            req.owner = owner;
+            req.rental = rental;
+            next();
+        } catch (error) {
+            console.error("Middleware error:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    });
+}
+
+
+module.exports = {
+    VerifyPostRental,
+    verifyGetAllRentals,
+    VerifyPatchRental,
+    VerifyDeleteCustomerRental,
+    VerifyDeleteOwnerRental,
+    verifyGetAllRentalsRequest,
+    VerifyReqRentalAccept
+}

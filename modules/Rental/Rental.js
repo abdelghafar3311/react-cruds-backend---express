@@ -6,22 +6,26 @@ const RentedSchema = new mongoose.Schema({
         default: Date.now
     },
     endDate: {
-        type: Date,
-        required: true
-    },
-    token: { // the token is the same token in RoomRented module
         type: String,
-        required: true
     },
-    status: {
+    expires: {
         type: String,
-        enum: ["active", "notActive", "expire"],
-        default: "notActive"
+    },
+    isExpires: {
+        type: Boolean,
+        default: false
     },
     pay: {
         type: Number,
         min: 1,
-        required: true
+    }, isDeleted: {
+        type: Boolean,
+        default: false
+    },
+    isAccept: {
+        type: String,
+        enum: ["pending", "accept", "reject"],
+        default: "pending"
     },
     Area_Id: {
         type: mongoose.Schema.Types.ObjectId,
@@ -45,6 +49,21 @@ const RentedSchema = new mongoose.Schema({
     }
 });
 
-const Owner_Rented = mongoose.model("Rented", RentedSchema);
+RentedSchema.pre("findOneAndDelete", async function (next) {
+    try {
+        const rentalId = this.getQuery()["_id"];
+        if (rentalId) {
+            await mongoose.model("Product").updateMany(
+                { rentalId: rentalId },
+                { $unset: { rentalId: "" } }
+            );
+        }
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
 
-module.exports = Owner_Rented;
+const Rented = mongoose.model("Rented", RentedSchema);
+
+module.exports = Rented;

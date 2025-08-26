@@ -10,6 +10,8 @@ const Room = require("../../modules/Room/Room");
 const { CreateDeleteToken } = require("../../middlewares/Token");
 const router = express.Router();
 
+// service to create date
+const addTimeToDate = require("../../services/addTimeToDate");
 
 /** 
  * @method POST
@@ -126,5 +128,41 @@ router.get("/one/:id", verifyGetAllAreas, async (req, res) => {
  * @route /api/owner/area/delete/:id
  * @access private
  **/
+
+/*
+ response example: 
+{
+    "AlarmMessage": "Your area will be deleted in 5 minutes",
+    "timeNumber": 5,
+    "timeType": "m"
+}
+*/
+
+router.patch("/alarm/:id", verifyAreaWillDelete, async (req, res) => {
+    try {
+        const now = new Date();
+        const { error, result } = addTimeToDate(now, req.time ?? "5m");
+        if (error) {
+            return res.status(400).json({ message: error });
+        }
+        const token = CreateDeleteToken({ id: req.areaData._id, ownerId: req.areaData.Owner_Id, name: req.areaData.nameArea }, req.time);
+        const update = await Area.findByIdAndUpdate(req.params.id, {
+            isAlarm: true,
+            AlarmMessage: req.msa,
+            AlarmToken: token,
+            AlarmDate: result,
+        }, { new: true });
+
+        if (!update) {
+            return res.status(404).json({ message: "Area not found" });
+        }
+
+        res.status(200).json({ message: "Area is ready for delete", area: update });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal Server Error" })
+    }
+});
+
 
 module.exports = router;

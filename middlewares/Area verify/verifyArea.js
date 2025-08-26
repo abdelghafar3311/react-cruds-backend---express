@@ -1,4 +1,4 @@
-const { verifyToken } = require("../verifyToken");
+const { verifyToken, verifyDeleteToken } = require("../verifyToken");
 
 const { validateAreaPOST, validateAreaPUT, validateAlarmMessage } = require("../../validations/area.valid");
 const Area = require("../../modules/Area/Area");
@@ -94,7 +94,6 @@ const verifyGetAllAreas = async (req, res, next) => {
             if (!owner) {
                 return res.status(404).json({ message: "Owner not found" });
             }
-
             next();
         } catch (error) {
             console.error("Middleware error:", error);
@@ -103,28 +102,21 @@ const verifyGetAllAreas = async (req, res, next) => {
     });
 }
 
-// put token in area which delete
-/** 
-@explain what this middleware does:
-# we add verifyToken for alarm token to know the area we must delete or create token to delete
-if token found we respond with message that area expire token and can delete now
-if token not found we create token to delete area and send it to user
-@so we must make verifyToken to check if token is valid or not and must be public function
-@this middleware use to patch area to delete only
-@this middleware use to verify area before delete
-@this middleware use to verify area before delete and send message to user
-@this middleware use to verify area before delete and create token to delete area
-*/
+// patch token in area which delete
+
 const verifyAreaWillDelete = async (req, res, next) => {
     verifyToken(req, res, async () => {
         try {
             // values
             let msa;
+            let time = "5m";
             // validate area
-            const { error } = validateAlarmMessage(req.body);
+            const { error, value } = validateAlarmMessage(req.body);
             if (error) {
                 return res.status(400).json({ message: error.details[0].message });
             }
+            req.body = value;
+            console.log("req.body", req.body);
             // check id validity
             if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
                 return res.status(400).json({ message: "Invalid area ID." });
@@ -141,14 +133,25 @@ const verifyAreaWillDelete = async (req, res, next) => {
                 return res.status(403).json({ message: "You are not allowed to delete this area." });
             }
 
-            msa = "! This area will be deleted !";
-            // check alarm message
-            if (req.body.AlarmMessage || req.body.AlarmMessage.trim() !== "") {
-                msa = req.body.AlarmMessage.trim();
+            // check area is alarm
+            if (area.isAlarm) {
+                return res.status(200).json({ message: "area is auto delete when the time is expired" });
             }
 
-            req.msa = msa;
-            req.areaData = { ...req.body };
+            msa = "! This area will be deleted !";
+
+
+            // check time send or no 
+            if (req.body.timeNumber && req.body.timeType) {
+                const timeNumber = req.body.timeNumber;
+                const timeType = req.body.timeType;
+
+                time = `${timeNumber}${timeType}`;
+            }
+
+            req.msa = req.body.AlarmMessage || msa;
+            req.time = time;
+            req.areaData = area;
             next();
         } catch (error) {
             console.error("Middleware error:", error);

@@ -4,8 +4,9 @@
   "description": "backend for react cruds",
   "main": "app.js",
   "scripts": {
-    "test": "hello express",
-    "start": "nodemon app"
+    "test": "jest",
+    "start": "nodemon app.js",
+    "test:watch": "jest --watch"
   },
   "author": "Abdel Gaffer",
   "license": "ISC",
@@ -20,9 +21,12 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.4",
     "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "jest": "^30.0.5",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.1.4"
   }
 }
