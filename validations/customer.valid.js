@@ -24,7 +24,6 @@ const validateCustomerLoginSchema = (obj) => {
 // joi schema for update
 const validateCustomerUpdateSchema = (obj) => {
     const schema = Joi.object({
-        username: Joi.string().min(3).max(200).trim(),
         email: Joi.string().email(),
         password: Joi.string().min(6),
     });

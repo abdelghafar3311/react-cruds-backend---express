@@ -24,21 +24,19 @@ const verifyToken = (req, res, next) => {
 // verify delete token middleware
 const verifyRentalToken = (token) => {
     try {
-        const decode = jwt.verify(token, secreteKeyRental);
-
+        const decoded = jwt.verify(token, secreteKeyRental);
         return {
-            expiresToken: false,
-            data: decode,
+            isValid: true,
+            data: decoded
         };
-
     } catch (error) {
         return {
-            expiresToken: true,
-            data: null
+            isValid: false,
+            data: null,
+            reason: error// TokenExpiredError | JsonWebTokenError
         };
     }
 };
-
 
 module.exports = {
     verifyToken,

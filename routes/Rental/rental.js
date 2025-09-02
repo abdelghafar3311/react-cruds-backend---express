@@ -1,4 +1,5 @@
 const express = require("express");
+const router = express.Router();
 // get verify token
 const { VerifyPostRental,
     verifyGetAllRentals,
@@ -12,217 +13,36 @@ const { VerifyPostRental,
 const Rental = require("../../modules/Rental/Rental");
 const { Customer } = require("../../modules/Customer/Customer_Module");
 const RentalRequest = require("../../modules/Rental/RentalRequest");
+const OwnerProfile = require("../../modules/Owners/OwnerProfile");
 // services
 const addTimeToDate = require("../../services/addTimeToDate");
 // token
 const { CreateTokenRental } = require("../../middlewares/Token");
-const router = express.Router();
 
-/**
- * @method POST
- * @description add new rental
- * @route /api/rental/sug-subscript
- * @access private
-*/
+// controllers
+const {
+    AddNewRentalController,
+    GetAllRequestRentalController,
+    ReqRentalAcceptController,
+    GetAllRentalController,
+    UpdateSubscriptionController,
+    DeleteSubscriptionController,
+    DeleteRentalController
+} = require("../../controllers/Rental/rental.controller");
 
-router.post("/sug-subscript", VerifyPostRental, async (req, res) => {
-    try {
-        // add new money to customer
-        // const customer = await Customer.findByIdAndUpdate(req.customer.id, {
-        //     $set: {
-        //         money: req.money
-        //     }
-        // }, { new: true });
-        // const now = new Date();
-        // const { result, error } = addTimeToDate(now, req.addDate ?? "2d");
-        // if (error) {
-        //     return res.status(400).json({ message: error });
-        // }
-        // const token = CreateTokenRental({ room: req.room._id, customer: req.customer.id, owner: req.owner._id, area: req.area._id }, req.addDate);
-        const rental = new Rental({
-            Room_Id: req.room._id,
-            Owner_Id: req.owner._id,
-            Area_Id: req.area._id,
-            isAccept: "pending",
-        });
-        await rental.save();
 
-        const requestRental = new RentalRequest({
-            time: req.addDate,
-            pay: req.money,
-            customer: req.customer.id,
-            owner: req.owner._id,
-            Rental_Id: rental._id
-        })
-        res.status(201).json({ Rental: rental, RentalRequest: requestRental });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-});
+router.post("/sug-subscript", VerifyPostRental, AddNewRentalController);
 
-/**
- * @method GET
- * @description get all request rentals
- * @route /api/rental/request
- * @access private
-*/
+router.get("/request", verifyGetAllRentalsRequest, GetAllRequestRentalController);
 
-router.get("/request", verifyGetAllRentalsRequest, async (req, res) => {
-    try {
-        const findRequests = await RentalRequest.find({ Owner_Id: req.owner.id }).populate("customer").populate("rental").populate("Rental.Room_Id").lean();
-        res.status(200).json(findRequests);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-});
+router.patch("/request/:id", VerifyReqRentalAccept, ReqRentalAcceptController);
 
-/**
- * @method PATCH / DELETE
- * @description update request rental and access or not access
- *  if access => delete request and update is accept to true and add info time and pay
- *  if not access => delete rental and put token in request to delete for two hours
- * @route /api/rental/request
- * @access private
-*/
+router.get("/", verifyGetAllRentals, GetAllRentalController);
 
-router.patch("/rental/:id", VerifyReqRentalAccept, async (req, res) => {
-    try {
-        const isAccept = req.body.isAccept;
-        const reqRental = await RentalRequest.findById(req.params.id);
-        const rental = await Rental.findById(reqRental.Rental_Id);
-        const customer = await Customer.findById(reqRental.Customer_Id);
-        if (isAccept === "accept") {
-            // add new money to customer
-            // check money
-            if (customer.money < reqRental.pay) {
-                return res.status(400).json({ message: "The Customer does not have enough money, you can reject the request" });
-            }
-            // add new money to customer
-            const newMoney = customer.money - reqRental.pay;
-            const newCustomer = await Customer.findByIdAndUpdate(reqRental.Customer_Id, { $set: { money: newMoney } }, { new: true });
-            // update rental and add info time and pay
-            const { result, error } = addTimeToDate(new Date(), reqRental.time);
-            if (error) {
-                return res.status(400).json({ message: error });
-            }
-            const token = CreateTokenRental({ room: rental.Room_Id, customer: rental.Customer_Id, owner: req.ownerDB._id, area: rental.Area_Id }, req.addDate);
+router.patch("/updateSubscription/:id", VerifyPatchRental, UpdateSubscriptionController);
 
-            const newRental = await Rental.findByIdAndUpdate(reqRental.Rental_Id, {
-                $set: {
-                    isAccept: "accept",
-                    expires: token,
-                    time: result,
-                    pay: reqRental.pay
-                }
-            }, { new: true });
-            // delete request
-            await RentalRequest.findByIdAndDelete(req.params.id);
-            // return result
-            return res.status(200).json({ message: "Operation successful", Rental: newRental });
-        }
+router.delete("/delete_subscription/:id", VerifyDeleteCustomerRental, DeleteSubscriptionController);
 
-        // create token for req to delete
-        const token = CreateTokenRental({ room: rental.Room_Id, customer: rental.Customer_Id, owner: req.ownerDB._id, area: rental.Area_Id }, "1d");
-        // update isAccept to reject
-        await RentalRequest.findByIdAndUpdate(req.params.id, { $set: { willDelete: true, DeleteToken: token } }, { new: true });
-        // delete rental
-        await Rental.findByIdAndDelete(reqRental.Rental_Id);
-        // response
-        return res.status(200).json({ message: "Operation successful" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-})
-
-/**
- * @method GET
- * @description get all rentals
- * @route /api/rental
- * @access private
-*/
-router.get("/", verifyGetAllRentals, async (req, res) => {
-    try {
-        res.status(200).json(req.rentals);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-});
-
-/**
- * @method PATCH
- * @description patch a rental
- * @route /api/rental/updateSubscription/:id
- * @access private
-*/
-
-router.patch("/updateSubscription/:id", VerifyPatchRental, async (req, res) => {
-    try {
-        // add new money to customer
-        const customer = await Customer.findByIdAndUpdate(req.customer.id, {
-            $set: {
-                money: req.money
-            }
-        }, { new: true });
-        const { result, error } = addTimeToDate(new Date(), req.addDate ?? "2d");
-        if (error) {
-            return res.status(400).json({ message: error });
-        }
-        const token = CreateTokenRental({ room: req.room._id, customer: req.customer.id, owner: req.owner._id, area: req.area._id }, req.addDate);
-        const rental = await Rental.findByIdAndUpdate(req.params.id, {
-            $set: {
-                expires: token,
-                endDate: result,
-                isExpires: false
-            }
-        }, { new: true });
-
-        res.status(200).json({ Rental: rental, Customer: customer });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-});
-
-/**
- * @method DELETE By Customer
- * @description delete a rental
- * @route /api/rental/delete_subscription/:id
- * @access private
-*/
-
-router.delete("/delete_subscription/:id", VerifyDeleteCustomerRental, async (req, res) => {
-    try {
-        await Rental.findByIdAndDelete(req.params.id);
-        return res.status(200).json({ message: "Delete successful" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-});
-
-/**
- * @method Patch By Customer
- * @description make isDeleted of rental true
- * @route /api/rental/owner/delete/:id
- * @access private
-*/
-
-router.patch("/owner/delete/:id", VerifyDeleteOwnerRental, async (req, res) => {
-    try {
-        const update = await Rental.findByIdAndUpdate(req.params.id, {
-            $set: {
-                isDeleted: true
-            }
-        }, { new: true });
-        return res.status(200).json({ message: "Delete successful", rental: update });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-});
+router.patch("/owner/delete/:id", VerifyDeleteOwnerRental, DeleteRentalController);
 
 module.exports = router;

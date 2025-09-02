@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const Joi = require("joi");
 
 // schema
 const ReportSchema = new mongoose.Schema({

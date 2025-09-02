@@ -6,12 +6,15 @@ const { Customer } = require("../../modules/Customer/Customer_Module");
 const Room = require("../../modules/Room/Room");
 const Area = require("../../modules/Area/Area");
 const Owner = require("../../modules/Owners/Owner");
+const OwnerProfile = require("../../modules/Owners/OwnerProfile");
 const RentalRequest = require("../../modules/Rental/RentalRequest");
 const mongoose = require("mongoose");
 // post verify rental
 const VerifyPostRental = (req, res, next) => {
     verifyToken(req, res, async () => {
         try {
+            // variables
+            let price_pay;
             // validate
             const { error, value } = validPostRental(req.body);
             if (error) {
@@ -30,6 +33,10 @@ const VerifyPostRental = (req, res, next) => {
             }
             if (room.isDeleted) {
                 return res.status(403).json({ message: "Room will delete" });
+            }
+            price_pay = room.price * +req.body.timeNumber;
+            if (room.Discount > 0) {
+                price_pay = room.Discount * +req.body.timeNumber;
             }
             // check area
             const area = await Area.findById(room.Area_Id);
@@ -50,23 +57,25 @@ const VerifyPostRental = (req, res, next) => {
             }
             // check if room is already rented
             const rental = await Rented.findOne({ Room_Id: room._id });
-            if (rental && rental.isExpires) {
-                return res.status(403).json({ message: "Room is already rented" });
+            if (rental && rental.subscriptionState === "active") {
+                return res.status(403).json({ message: "Sorry, you can't post a rental for this room" });
+            }
+            if (rental && rental.isAccept === "accept") {
+                return res.status(403).json({ message: "Sorry, you can't post a rental for this room" });
             }
             // check customer money is enough
-            if (customer.money < room.price * +req.body.timeNumber) {
+            if (customer.money < price_pay) {
                 return res.status(403).json({ message: "You don't have enough money to post a rental" });
             }
-            const Money = room.price * +req.body.timeNumber;
             // add date
             const addDate = `${req.body.timeNumber}${req.body.timeType}`
             // attach values to request object
             req.customer = customer;
             req.area = area;
             req.room = room;
-            req.owner = owner;
+            req.ownerDB = owner;
             req.AddDate = addDate;
-            req.money = newMoney;
+            req.money = price_pay;
             next();
         } catch (error) {
             console.error("Middleware error:", error);
@@ -146,6 +155,8 @@ const VerifyReqRentalAccept = (req, res, next) => {
 const VerifyPatchRental = (req, res, next) => {
     verifyToken(req, res, async () => {
         try {
+            // variables
+            let price_pay = 0;
             // validate
             const { error, value } = validPatchRental(req.body);
             if (error) {
@@ -169,17 +180,26 @@ const VerifyPatchRental = (req, res, next) => {
             if (rental.isDeleted) {
                 return res.status(403).json({ message: "Rental will delete" });
             }
+            // check customer has this rental
+            if (customer._id.toString() !== rental.Customer_Id.toString()) {
+                return res.status(403).json({ message: "You are not allowed to patch this rental" });
+            }
             // check owner
             const owner = await Owner.findById(rental.Owner_Id);
             if (!owner) {
                 return res.status(404).json({ message: "Owner not found" });
+            }
+            // gey profile of owner
+            const profile = await OwnerProfile.findOne({ Owner_Id: owner._id });
+            if (!profile) {
+                return res.status(500).json({ message: "Error Server Internal, Please Try Again in anther time" });
             }
             // check owner has this room
             if (owner._id.toString() !== rental.Owner_Id.toString()) {
                 return res.status(403).json({ message: "You are not allowed to patch a rental for this room" });
             }
             // check rental is expired
-            if (!rental.isExpires) {
+            if (rental.subscriptionState === "active") {
                 return res.status(403).json({ message: "Rental is not expired" });
             }
             // check room
@@ -190,8 +210,9 @@ const VerifyPatchRental = (req, res, next) => {
             if (room.isDeleted) {
                 return res.status(403).json({ message: "Room will delete" });
             }
-            if (customer.money < room.price * +req.body.timeNumber) {
-                return res.status(403).json({ message: "You don't have enough money to patch a rental" });
+            price_pay = room.price * +req.body.timeNumber;
+            if (room.Discount > 0) {
+                price_pay = room.Discount * +req.body.timeNumber;
             }
             const area = await Area.findById(room.Area_Id);
             if (!area) {
@@ -200,7 +221,14 @@ const VerifyPatchRental = (req, res, next) => {
             if (area.isDeleted) {
                 return res.status(403).json({ message: "Area will delete" });
             }
-            const newMoney = customer.money - room.price * +req.body.timeNumber;
+            if (customer.money < price_pay) {
+                return res.status(403).json({ message: "You don't have enough money to patch a rental" });
+            }
+
+            const Money = price_pay;
+            const addMoneyForOwner = Money + profile.money;
+            const time = `${req.body.timeNumber}${req.body.timeType}`;
+            const newMoney = customer.money - Money;
             // attach values to request object 
             req.body = value;
             req.customer = customer;
@@ -208,7 +236,11 @@ const VerifyPatchRental = (req, res, next) => {
             req.rental = rental;
             req.room = room;
             req.money = newMoney;
+            req.moneyRental = Money;
             req.area = area;
+            req.addDate = time;
+            req.addMoneyForOwner = addMoneyForOwner;
+            req.profile = profile;
             next();
         } catch (error) {
             console.error("Middleware error:", error);
@@ -235,7 +267,7 @@ const verifyGetAllRentals = async (req, res, next) => {
                 }
                 // find all rentals for this customer
                 rentals = await Rented.find({ Customer_Id: profile._id })
-                    .populate("Room_Id", "startDate endDate isExpires")
+                    .populate("Room_Id", "startDate endDate subscriptionState")
                     .populate("Owner_Id", "nameOwner")
                     .populate("Area_Id", "nameArea")
                     .lean();
@@ -246,7 +278,7 @@ const verifyGetAllRentals = async (req, res, next) => {
                 }
                 // find all rentals for this owner
                 rentals = await Rented.find({ Owner_Id: profile._id })
-                    .populate("Room_Id", "startDate endDate isExpires")
+                    .populate("Room_Id", "startDate endDate subscriptionState")
                     .populate("Area_Id", "nameArea")
                     .populate("Customer_Id", "username")
                     .lean();
@@ -284,11 +316,15 @@ const VerifyDeleteCustomerRental = async (req, res, next) => {
             }
 
             // check customer has this room
-            if (customer._id.toString() !== rental.Owner_Id.toString()) {
+            if (customer._id.toString() !== rental.Customer_Id.toString()) {
                 return res.status(403).json({ message: "You are not allowed to delete a rental for this room" });
             }
+            // check rental is accept or not
+            if (rental.isAccept === "pending" || rental.isAccept === "reject") {
+                return res.status(403).json({ message: "Rental is not accepted" });
+            }
             // check rental is expired
-            if (!rental.isExpires) {
+            if (rental.subscriptionState === "active") {
                 return res.status(403).json({ message: "Rental is not expired" });
             }
             // attach values to request object 

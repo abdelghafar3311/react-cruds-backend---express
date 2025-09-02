@@ -35,10 +35,6 @@ const ProfileSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    rating: {
-        type: Number,
-        default: 0
-    },
     Owner_Id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Owner",

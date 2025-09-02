@@ -11,9 +11,10 @@ const RentedSchema = new mongoose.Schema({
     expires: {
         type: String,
     },
-    isExpires: {
-        type: Boolean,
-        default: false
+    subscriptionState: {
+        type: String,
+        enum: ["active", "expired", "pending"],
+        default: "pending"
     },
     pay: {
         type: Number,

@@ -14,7 +14,7 @@ const CreateDeleteToken = (data, expire) => {
     })
 }
 
-const CreateTokenRental = (data, expire = "2d") => {
+const CreateTokenRental = (data, expire = "2h") => {
     return jwt.sign(data, secreteKeyRental, {
         expiresIn: expire
     })

@@ -25,10 +25,6 @@ const AreaSchema = new mongoose.Schema({
         max: 8, // limit of rooms
         required: true
     },
-    rating: {
-        type: Number,
-        default: 0
-    },
     // here alarms
     isDeleted: {
         type: Boolean,

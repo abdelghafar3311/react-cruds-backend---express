@@ -1,10 +1,9 @@
 const { verifyToken } = require("../verifyToken");
-const { validUpdateRoom, validCreateRoom, validateAlarmMessage } = require("../../validations/room.valid");
+const { validUpdateRoom, validCreateRoom } = require("../../validations/room.valid");
 // modules
 const Owner = require("../../modules/Owners/Owner");
 const Room = require("../../modules/Room/Room");
 const Area = require("../../modules/Area/Area");
-const Rented = require("../../modules/Rental/Rental");
 const { Customer } = require("../../modules/Customer/Customer_Module");
 const mongoose = require("mongoose");
 // env
@@ -136,15 +135,6 @@ const getCustomerRoomsVerify = (req, res, next) => {
 const verifyRoomWillDelete = async (req, res, next) => {
     verifyToken(req, res, async () => {
         try {
-            // values
-            let msa;
-            let time = "5m";
-            // validate area
-            const { error, value } = validateAlarmMessage(req.body);
-            if (error) {
-                return res.status(400).json({ message: error.details[0].message });
-            }
-            req.body = value;
             // check id validity
             if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
                 return res.status(400).json({ message: "Invalid room ID." });
@@ -162,23 +152,10 @@ const verifyRoomWillDelete = async (req, res, next) => {
             }
 
             // check area is alarm
-            if (room.isAlarm) {
-                return res.status(200).json({ message: "room is auto delete when the time is expired" });
+            if (room.isDeleted) {
+                return res.status(200).json({ message: "room is auto delete when users expired rentals" });
             }
 
-            msa = "! This room will be deleted !";
-
-            // console.log(req.body)
-            // check time send or no 
-            if (req.body.timeNumber && req.body.timeType) {
-                const timeNumber = req.body.timeNumber;
-                const timeType = req.body.timeType;
-
-                time = `${timeNumber}${timeType}`;
-            }
-
-            req.msa = req.body.AlarmMessage || msa;
-            req.time = time;
             req.roomData = room;
             // return res.json({ message: "dev test" })
             next();

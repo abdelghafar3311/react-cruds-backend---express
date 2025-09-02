@@ -7,107 +7,21 @@ const { verifyProfileData, verifyProfileUpdate, verifyGetProfile, verifyDeletePr
 // models
 const OwnerProfile = require('../../../modules/Owners/OwnerProfile');
 const Owner = require('../../../modules/Owners/Owner');
-// routers
+// controllers
+const {
+    CreateProfileController,
+    UpdateProfileController,
+    GetProfileController,
+    DeleteAccountController
+} = require("../../../controllers/owner/profile/profile.controller")
 
-/**
- * @method Post
- * @description  Post new owner profile
- * @route /api/owner/profile
- * @param {Object} req - The request object containing the profile data.
- * @param {Object} res - The response object used to send the response.
- * @returns {Object} - Returns a JSON object with the created profile data.
- * @throws {Error} - Throws an error if the profile data is invalid or if the profile already exists.
- * @access private
- **/
 
-router.post("/add", verifyProfileData, async (req, res) => {
-    try {
-        // Create a new profile using the validated data
-        const newProfile = new OwnerProfile({
-            Owner_Id: req.owner.id,
-            name: req.body.name,
-            money: req.body.money || 0,
-            Avatar: req.body.Avatar || "images/owner.png",
-            phone: req.body.phone,
-            address: req.body.address,
-            description: req.body.description || ""
-        });
-        await newProfile.save();
-        return res.status(201).json({ message: "Profile created successfully", profile: newProfile });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-})
+router.post("/add", verifyProfileData, CreateProfileController)
 
-/**
- * @method PUT
- * @description  Update owner profile
- * @route /api/owner/profile/update
- * @param {Object} req - The request object containing the updated profile data.
- * @param {Object} res - The response object used to send the response.
- * @returns {Object} - Returns a JSON object with the updated profile data.
- * @throws {Error} - Throws an error if the profile data is invalid or if the profile does not exist.
- * @access private
- */
+router.put("/update", verifyProfileUpdate, UpdateProfileController);
 
-router.put("/update", verifyProfileUpdate, async (req, res) => {
-    try {
-        const updatedProfile = await OwnerProfile.findByIdAndUpdate(req.profile._id, {
-            $set: {
-                ...req.body
-            }
-        }, { new: true });
+router.get("/", verifyGetProfile, GetProfileController);
 
-        return res.status(200).json({ message: "Profile updated successfully", profile: updatedProfile });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-});
-
-/**
- * @method GET
- * @description  Get owner profile
- * @route /api/owner/profile
- * @param {Object} req - The request object containing the owner ID.
- * @param {Object} res - The response object used to send the response.
- * @returns {Object} - Returns a JSON object with the profile data.
- * @throws {Error} - Throws an error if the profile does not exist.
- * @access private
- */
-
-router.get("/", verifyGetProfile, async (req, res) => {
-    try {
-        // Find the profile by Owner_Id
-        const profile = await OwnerProfile.findOne({ Owner_Id: req.owner.id }).lean();
-        return res.status(200).json({ profile });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-});
-
-/** 
- * @method DELETE
- * @description  Delete owner profile
- * @route /api/owner/profile/delete
- * @param {Object} req - The request object containing the owner ID.
- * @param {Object} res - The response object used to send the response.
- * @returns {Object} - Returns a JSON object with a success message.
- * @throws {Error} - Throws an error if the profile does not exist or if there is an internal server error.
- * @access private
- */
-
-router.delete("/delete", verifyDeleteProfile, async (req, res) => {
-    try {
-        await OwnerProfile.findByIdAndDelete(req.profile._id);
-        await Owner.findByIdAndDelete(req.owner.id);
-        return res.status(200).json({ message: "Profile deleted successfully" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-});
+router.delete("/delete", verifyDeleteProfile, DeleteAccountController);
 
 module.exports = router;

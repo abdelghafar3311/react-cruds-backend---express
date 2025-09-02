@@ -21,7 +21,18 @@ const validateOwnerLoginSchema = (obj) => {
     return schema.validate(obj)
 }
 
+// valid update owner
+const validateOwnerUpdateSchema = (obj) => {
+    const schema = Joi.object({
+        email: Joi.string().email(),
+        password: Joi.string().min(6),
+    });
+
+    return schema.validate(obj)
+}
+
 module.exports = {
     validateOwnerRegisterSchema,
-    validateOwnerLoginSchema
+    validateOwnerLoginSchema,
+    validateOwnerUpdateSchema
 }

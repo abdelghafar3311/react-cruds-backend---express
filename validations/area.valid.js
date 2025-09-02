@@ -25,9 +25,7 @@ const validateAreaPUT = (obj) => {
 // message alarm
 const validateAlarmMessage = (obj) => {
     const schema = Joi.object({
-        AlarmMessage: Joi.string().min(2).max(400).trim(),
-        timeNumber: Joi.number().min(1).default(5),
-        timeType: Joi.string().valid("m", "h", "d").default("m"),
+        isDeleted: Joi.boolean().required(),
     });
 
     return schema.validate(obj);

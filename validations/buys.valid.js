@@ -12,7 +12,7 @@ const validateProduct = (obj) => {
         taxes: Joi.number().min(0).default(0),
         ads: Joi.number().min(0).default(0),
         discount: Joi.number().min(0).default(0),
-        Room_id: Joi.string().required(),
+        Rental_Id: Joi.string().required(),
     });
 
     return schema.validate(obj);

@@ -21,10 +21,6 @@ const postProfileSchema = (obj) => {
             .trim().allow(""),
         status: Joi.boolean()
             .default(true),
-        rating: Joi.number()
-            .min(0)
-            .max(5)
-            .default(0)
     });
 
     return schema.validate(obj, { abortEarly: false, stripUnknown: true });

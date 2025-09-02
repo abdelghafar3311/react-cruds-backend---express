@@ -33,19 +33,7 @@ const validCreateRoom = (obj) => {
 }
 
 
-// message alarm
-const validateAlarmMessage = (obj) => {
-    const schema = Joi.object({
-        AlarmMessage: Joi.string().min(2).max(400).trim().optional(),
-        timeNumber: Joi.number().min(1).default(5).optional(),
-        timeType: Joi.string().valid("m", "h", "d").default("m").optional(),
-    });
-
-    return schema.validate(obj);
-}
-
 module.exports = {
     validUpdateRoom,
-    validCreateRoom,
-    validateAlarmMessage
+    validCreateRoom
 };
