@@ -51,7 +51,7 @@ const AddNewRentalController = async (req, res) => {
 
 const GetAllRequestRentalController = async (req, res) => {
     try {
-        const findRequests = await RentalRequest.find({ Owner_Id: req.owner.id }).populate("customer").populate("rental").populate("Rental.Room_Id").lean();
+        const findRequests = await RentalRequest.find({ Owner_Id: req.owner.id }).populate("Rental_Id").lean();
         res.status(200).json(findRequests);
     } catch (error) {
         console.error(error);
@@ -73,6 +73,7 @@ const ReqRentalAcceptController = async (req, res) => {
         const isAccept = req.body.isAccept;
         const reqRental = await RentalRequest.findById(req.params.id);
         const rental = await Rental.findById(reqRental.Rental_Id);
+        console.log("rental: ", rental);
         const customer = await Customer.findById(reqRental.Customer_Id);
         if (isAccept === "accept") {
             // add new money to customer
@@ -84,9 +85,10 @@ const ReqRentalAcceptController = async (req, res) => {
             const newMoney = customer.money - reqRental.pay;
             await Customer.findByIdAndUpdate(reqRental.Customer_Id, { $set: { money: newMoney } }, { new: true });
             // add money for owner
-            const GetProfile = await OwnerProfile.findById(req.ownerDB._id);
+            const GetProfile = await OwnerProfile.findOne({ Owner_Id: req.ownerDB._id });
+            console.log("test: ", req.ownerDB);
             const newMoneyOwner = GetProfile.money + reqRental.pay;
-            await OwnerProfile.findByIdAndUpdate(req.ownerDB._id, { $set: { money: newMoneyOwner } }, { new: true });
+            const ownerProfile = await OwnerProfile.findByIdAndUpdate(req.ownerDB._id, { $set: { money: newMoneyOwner } }, { new: true });
             // update rental and add info time and pay
             const { result, error } = addTimeToDate(new Date(), reqRental.time);
             if (error) {
@@ -105,10 +107,8 @@ const ReqRentalAcceptController = async (req, res) => {
             }, { new: true });
             // delete request
             await RentalRequest.findByIdAndDelete(req.params.id);
-            // take money only 
-            const { money } = newMoneyOwner._doc;
             // return result
-            return res.status(200).json({ message: "Operation successful", Rental: newRental, yourMoney: money });
+            return res.status(200).json({ message: "Operation successful", Rental: newRental, yourMoney: newMoney });
         }
 
         // create token for req to delete
@@ -116,7 +116,12 @@ const ReqRentalAcceptController = async (req, res) => {
         // update isAccept to reject
         await RentalRequest.findByIdAndUpdate(req.params.id, { $set: { willDelete: true, DeleteToken: token } }, { new: true });
         // delete rental
-        await Rental.findByIdAndDelete(reqRental.Rental_Id);
+        await Rental.findByIdAndUpdate(reqRental.Rental_Id, {
+            $set: {
+                isAccept: "reject",
+                rejectToken: token
+            }
+        }, { new: true });
         // response
         return res.status(200).json({ message: "Operation successful" });
     } catch (error) {

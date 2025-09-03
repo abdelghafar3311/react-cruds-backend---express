@@ -18,7 +18,8 @@ const UpdateRoomController = async (req, res) => {
             description: req.body.description,
             status: req.body.status,
             length: req.body.length,
-            width: req.body.width
+            width: req.body.width,
+            Discount: req.body.Discount
         };
         // update room
         const updatedRoom = await Room.findByIdAndUpdate(req.room._id, updateData, { new: true });
@@ -57,7 +58,8 @@ const CreateRoomController = async (req, res) => {
             length: req.body.length,
             width: req.body.width,
             Area_Id: req.area._id,
-            Owner_Id: req.owner_id
+            Owner_Id: req.owner_id,
+            Discount: req.body.Discount
         });
 
         // save room

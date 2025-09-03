@@ -55,11 +55,11 @@ const verifyAreaPUT = async (req, res, next) => {
     verifyToken(req, res, async () => {
         try {
             // validate area
-            const { error } = validateAreaPUT(req.body);
+            const { error, value } = validateAreaPUT(req.body);
             if (error) {
                 return res.status(400).json({ message: error.details[0].message });
             }
-
+            req.body = value;
             // check id validity
             if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
                 return res.status(400).json({ message: "Invalid area ID." });

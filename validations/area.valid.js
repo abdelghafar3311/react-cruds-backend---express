@@ -16,7 +16,6 @@ const validateAreaPUT = (obj) => {
         nameArea: Joi.string().min(2).max(200).trim(),
         address: Joi.string().min(2).max(400).trim(),
         status: Joi.boolean(),
-        maxRooms: Joi.number().min(1).max(8),
     });
 
     return schema.validate(obj);

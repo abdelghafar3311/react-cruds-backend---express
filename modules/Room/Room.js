@@ -36,19 +36,14 @@ const RoomSchema = new mongoose.Schema({
     price: {
         type: Number,
         min: 1
+    }, Duration: {
+        type: String,
+        enum: ["h", "m", "d", "w", "M", "y"],
+        default: "M"
     },
     Discount: {
         type: Number,
         default: 0
-    },
-    Duration: {
-        type: String,
-        enum: ["y", "M", "d", "h", "w", "m", "s"],
-        default: "M"
-    },
-    isUsed: {
-        type: Boolean,
-        default: false
     },
     Area_Id: {
         type: mongoose.Schema.Types.ObjectId,

@@ -1,5 +1,6 @@
 const { postProfileSchema, validateProfileUpdate } = require("../../validations/profile.valid");
 const OwnerProfile = require("../../modules/Owners/OwnerProfile");
+const Owner = require("../../modules/Owners/Owner");
 const { verifyToken } = require("../verifyToken");
 
 // verify profile post data
@@ -10,9 +11,13 @@ const verifyProfileData = async (req, res, next) => {
             if (error) {
                 return res.status(400).json({ message: error.details[0].message });
             }
-
+            // check if owner already exists
+            const existingOwner = await Owner.findOne({ _id: req.owner.id }).lean();
+            if (!existingOwner) {
+                return res.status(400).json({ message: "Owner not found" });
+            }
             // check if owner profile already exists
-            const existingProfile = await OwnerProfile.findOne({ Owner_Id: req.owner._id }).lean();
+            const existingProfile = await OwnerProfile.findOne({ Owner_Id: req.owner.id }).lean();
             if (existingProfile) {
                 return res.status(400).json({ message: "Owner profile already exists" });
             }
@@ -35,6 +40,11 @@ const verifyProfileUpdate = async (req, res, next) => {
             const { error, value } = validateProfileUpdate(req.body);
             if (error) {
                 return res.status(400).json({ message: error.details[0].message });
+            }
+            // check if owner already exists
+            const existingOwner = await Owner.findOne({ _id: req.owner.id }).lean();
+            if (!existingOwner) {
+                return res.status(400).json({ message: "Owner not found" });
             }
             // check if profile exists
             const profile = await OwnerProfile.findOne({ Owner_Id: req.owner.id }).lean();

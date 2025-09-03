@@ -74,7 +74,7 @@ const UpdateProfileController = async (req, res) => {
 const GetProfileController = async (req, res) => {
     try {
         // Find the profile by Owner_Id
-        const profile = await OwnerProfile.findOne({ Owner_Id: req.Owner.id }).lean();
+        const profile = await OwnerProfile.findOne({ Owner_Id: req.owner.id }).lean();
         return res.status(200).json({ profile });
     } catch (error) {
         console.error(error);
@@ -96,7 +96,7 @@ const GetProfileController = async (req, res) => {
 const DeleteAccountController = async (req, res) => {
     try {
         await OwnerProfile.findByIdAndDelete(req.profile._id);
-        await Owner.findByIdAndDelete(req.Owner.id);
+        await Owner.findByIdAndDelete(req.owner.id);
         return res.status(200).json({ message: "Profile deleted successfully" });
     } catch (error) {
         console.error(error);

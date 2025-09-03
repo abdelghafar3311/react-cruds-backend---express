@@ -27,6 +27,8 @@ const RentedSchema = new mongoose.Schema({
         type: String,
         enum: ["pending", "accept", "reject"],
         default: "pending"
+    }, rejectToken: {
+        type: String
     },
     Area_Id: {
         type: mongoose.Schema.Types.ObjectId,

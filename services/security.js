@@ -13,18 +13,13 @@ const { CreateTokenRental } = require("../middlewares/Token");
 // security cron job
 // check req rental will accept but has rental is pending
 const RentalReqWillAccept = async () => {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
     try {
         const acceptRentals = await Rental.find({ isAccept: "accept" });
 
         for (const rental of acceptRentals) {
-            const room = await Room.findById(rental.Room_Id).session(session);
-            if (!room) continue;
-
-            const pendingRentals = await Rental.find({ Room_Id: room._id, isAccept: "pending" }).session(session);
-
+            const room = await Room.findById(rental.Room_Id);
+            if (!room) return await Rental.findByIdAndDelete(rental._id);
+            const pendingRentals = await Rental.find({ Room_Id: room._id, isAccept: "pending" });
             for (const pendingRental of pendingRentals) {
                 const token = CreateTokenRental(
                     {
@@ -33,27 +28,27 @@ const RentalReqWillAccept = async () => {
                         owner: pendingRental.Owner_Id,
                         area: pendingRental.Area_Id
                     },
-                    "1d"
+                    "2m"
                 );
 
-                await RentalRequest.findByIdAndUpdate(
-                    pendingRental._id,
-                    { $set: { willDelete: true, DeleteToken: token } },
-                    { new: true, session }
+                await RentalRequest.updateMany(
+                    { Rental_Id: pendingRental._id },
+                    { $set: { willDelete: true, DeleteToken: token } }
                 );
 
-                await Rental.findByIdAndDelete(pendingRental._id, { session });
+
+                await Rental.updateMany({ _id: pendingRental._id }, {
+                    $set: {
+                        isAccept: "reject",
+                        rejectToken: token
+                    }
+                });
 
                 console.log("update will delete id: ", pendingRental._id);
             }
         }
-
-        await session.commitTransaction();
     } catch (error) {
-        await session.abortTransaction();
         console.error("rental request for get accept rental error: ", error);
-    } finally {
-        session.endSession();
     }
 };
 
@@ -66,6 +61,7 @@ const RentalReqWillDelete = async () => {
                 const { isValid } = verifyRentalToken(rental.DeleteToken);
                 if (!isValid) {
                     await RentalRequest.findByIdAndDelete(rental._id);
+                    await Rental.findByIdAndDelete(rental.Rental_Id);
                     return console.log("delete req rental id:", rental._id);
                 }
             })

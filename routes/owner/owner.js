@@ -5,6 +5,6 @@ const { verifyToken } = require("../../middlewares/verifyToken");
 // controllers
 const { OwnerController } = require("../../controllers/owner/owner.controller")
 
-router.put("/:id", verifyToken, OwnerController)
+router.put("/update", verifyToken, OwnerController)
 
 module.exports = router;

@@ -14,16 +14,13 @@ const bcrypt = require("bcryptjs");
 
 const OwnerController = async (req, res) => {
     try {
-        if (req.owner.id !== req.params.id) {
-            return res.status(403).json({ message: "You are not authorized to perform this action." })
-        }
         // validate
         const { error } = validateOwnerUpdateSchema(req.body);
         if (error) {
             return res.status(400).json({ message: "syntax is wrong", error: error.details[0].message })
         }
         // check if not found
-        const findOwner = await Owner.findById(req.params.id);
+        const findOwner = await Owner.findById(req.owner.id);
         if (!findOwner) {
             return res.status(404).json({ message: "owner not found" });
         }
@@ -33,7 +30,7 @@ const OwnerController = async (req, res) => {
             req.body.password = await bcrypt.hash(req.body.password, salt);
         }
         // update
-        const UpdateOwner = await Owner.findByIdAndUpdate(req.params.id, {
+        const UpdateOwner = await Owner.findByIdAndUpdate(req.owner.id, {
             $set: {
                 email: req.body.email,
                 password: req.body.password,

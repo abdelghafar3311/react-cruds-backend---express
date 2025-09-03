@@ -1,5 +1,6 @@
 const { postCustomerProfileSchema, validateCustomerProfileUpdate } = require("../../validations/customerProfile.valid");
 const CustomerProfile = require("../../modules/Customer/CustomerProfile");
+const { Customer } = require("../../modules/Customer/Customer_Module");
 const { verifyToken } = require("../verifyToken");
 
 // verify profile post data
@@ -9,6 +10,11 @@ const verifyProfileData = async (req, res, next) => {
             const { value, error } = postCustomerProfileSchema(req.body);
             if (error) {
                 return res.status(400).json({ message: error.details[0].message });
+            }
+            // check if customer already exists
+            const existingCustomer = await Customer.findOne({ _id: req.customer.id }).lean();
+            if (!existingCustomer) {
+                return res.status(400).json({ message: "customer not found" });
             }
 
             // check if customer profile already exists
@@ -35,6 +41,11 @@ const verifyProfileUpdate = async (req, res, next) => {
             const { error, value } = validateCustomerProfileUpdate(req.body);
             if (error) {
                 return res.status(400).json({ message: error.details[0].message });
+            }
+            // check if customer already exists
+            const existingCustomer = await Customer.findOne({ _id: req.customer.id }).lean();
+            if (!existingCustomer) {
+                return res.status(400).json({ message: "customer not found" });
             }
             // check if profile exists
             const profile = await CustomerProfile.findOne({ Customer_Id: req.customer.id }).lean();
