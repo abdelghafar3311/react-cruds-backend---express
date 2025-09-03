@@ -7,9 +7,6 @@ const postCustomerProfileSchema = (obj) => {
             .max(200)
             .required()
             .trim(),
-        Avatar: Joi.string()
-            .default("images/owner.png")
-            .trim(),
         phone: Joi.string()
             .pattern(/^\+?\d{10,15}$/)
             .trim(),
@@ -28,9 +25,6 @@ const validateCustomerProfileUpdate = (obj) => {
         name: Joi.string()
             .min(3)
             .max(200)
-            .trim(),
-        Avatar: Joi.string().uri({ allowRelative: true })
-            .default("images/owner.png")
             .trim(),
         phone: Joi.string()
             .pattern(/^\+?\d{10,15}$/)

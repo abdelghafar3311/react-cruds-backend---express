@@ -6,7 +6,7 @@ const verifyImage = async (req, res, next) => {
     verifyToken(req, res, async () => {
         try {
             // check if owner profile already exists
-            const existingProfile = await CustomerProfile.findOne({ Owner_Id: req.owner.id }).lean();
+            const existingProfile = await CustomerProfile.findOne({ Customer_Id: req.owner.id }).lean();
             if (!existingProfile) {
                 return res.status(400).json({ message: "please make your profile first then upload your avatar" });
             }
