@@ -22,7 +22,7 @@ router.get("/", verifyGetAllAreas, GetAreasController);
 
 router.get("/one/:id", verifyGetAllAreas, GetByIdAreaController);
 
-router.patch("/alarm/:id", verifyAreaWillDelete, DeleteAreaController);
+router.patch("/delete/:id", verifyAreaWillDelete, DeleteAreaController);
 
 
 module.exports = router;

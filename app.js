@@ -40,8 +40,8 @@ const RentalRoutes = require("./routes/Rental/rental");
 const ProfileOfCustomer = require("./routes/customer/profile/profile");
 const UploadCustomerAvatar = require("./routes/customer/profile/avatar");
 // Routes
-app.use("/api/customer", customerRoutes);
 app.use("/api/auth", customerAuth);
+app.use("/api/customer", customerRoutes);
 app.use("/api/customer/profile", ProfileOfCustomer);
 app.use("/api/customer/profile/image", UploadCustomerAvatar);
 app.use("/api/sells", SellsProducts);

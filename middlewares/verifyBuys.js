@@ -4,7 +4,8 @@ const { secreteKey } = require("../values/env");
 const { validateProduct } = require("../validations/buys.valid");
 // Customer data
 const { Customer } = require("../modules/Customer/Customer_Module")
-const Room = require("../modules/Room/Room");
+const Rental = require("../modules/Rental/Rental");
+const Profile = require("../modules/Customer/CustomerProfile");
 // services
 const { calculateTotalPay } = require("../services/productService");
 // verify token
@@ -24,6 +25,11 @@ const verifyTokenForProductBuy = async (req, res, next) => {
             if (!findId) {
                 return res.status(400).json({ message: "Your account could not be found in our records. Please try again or contact support." });
             }
+            // check has profile
+            const profile = await Profile.findOne({ Customer_Id: findId._id });
+            if (!profile) {
+                return res.status(400).json({ message: "You must create a profile first" });
+            }
 
             // check pay
             const pay = (+req.body.price + +req.body.ads + +req.body.taxes) * +req.body.count;
@@ -31,20 +37,16 @@ const verifyTokenForProductBuy = async (req, res, next) => {
             if (pay > findId.money) {
                 return res.status(422).json({ message: "your money is not enough" })
             }
-            // check room found
-            const room = await Room.findById(req.body.Room_id);
-            if (!room) {
-                return res.status(404).json({ message: "Room not found" });
+            // check rental found
+            const rental = await Room.findById(req.body.Rental_Id);
+            if (!rental) {
+                return res.status(404).json({ message: "rental not found" });
             }
-            // check room is used
-            // if (room.isUsed) { // update in rental
-            //     return res.status(400).json({ message: "Room is currently in use and cannot be used for buying products" });
-            // }
 
             // create objects
             req.money = findId.money - pay;
             req.pay = pay;
-
+            req.rental = rental;
             next();
         } catch (error) {
             console.error("middleware error:", error);
@@ -70,28 +72,31 @@ const verifyTokenForProductsBuy = async (req, res, next) => {
             }
 
             // 2. fetch all rooms in one query
-            const roomIds = data.map(item => item.Room_id);
-            const rooms = await Room.find({ _id: { $in: roomIds } }).lean();
+            const rentalsIds = data.map(item => item.Rental_Id);
+            const rentals = await Rental.find({ _id: { $in: rentalsIds } }).lean();
 
             // 3. make fast lookup map
-            const roomMap = new Map(rooms.map(r => [r._id.toString(), r]));
+            const rentalMap = new Map(rentals.map(r => [r._id.toString(), r]));
 
             // 4. validate rooms existence and status
             for (const item of data) {
-                const room = roomMap.get(item.Room_id.toString());
-                if (!room) {
-                    return res.status(404).json({ message: "Room not found" });
+                const rental = rentalMap.get(item.Rental_Id.toString());
+                if (!rental) {
+                    return res.status(404).json({ message: "Rental not found" });
                 }
-                // if (room.isUsed) { // update in rental
-                //     return res.status(400).json({
-                //         message: "Room is currently in use and cannot be used for buying products"
-                //     });
-                // }
+                if (rental.isDeleted) {
+                    return res.status(403).json({ message: "Rental will delete" });
+                }
             }
             // check id
             const findId = await Customer.findById(req.customer.id);
             if (!findId) {
                 return res.status(400).json({ message: "Your account could not be found in our records. Please try again or contact support." });
+            }
+            // check has profile
+            const profile = await Profile.findOne({ Customer_Id: findId._id });
+            if (!profile) {
+                return res.status(400).json({ message: "You must create a profile first" });
             }
             // check money
             const pay = calculateTotalPay(data)

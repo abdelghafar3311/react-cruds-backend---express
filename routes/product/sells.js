@@ -1,7 +1,4 @@
 const express = require("express");
-const { Product } = require("../../modules/Product/Product");
-const { Customer } = require("../../modules/Customer/Customer_Module");
-const { Report } = require("../../modules/Report/Report");
 const { verifyTokenForProductSells, verifyTokenForSellsCount } = require("../../middlewares/verifySells")
 const router = express.Router();
 

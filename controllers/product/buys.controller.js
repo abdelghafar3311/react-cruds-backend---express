@@ -3,7 +3,7 @@ const router = express.Router();
 // modules
 const { Product } = require("../../modules/Product/Product")
 const { Customer } = require("../../modules/Customer/Customer_Module")
-const Room = require("../../modules/Room/Room");
+const Rental = require("../../modules/Rental/Rental");
 const { Report } = require("../../modules/Report/Report")
 
 
@@ -22,11 +22,6 @@ const PostNewProductController = async (req, res) => {
                 buys: req.pay
             }
         }, { new: true });
-        // make room isUsed true
-        const room = await Room.findById(req.body.Room_id);
-        if (!room.isUsed) {
-            await Room.findByIdAndUpdate(req.body.Room_id, { $set: { isUsed: true, } }, { new: true });
-        }
         const product = new Product({
             nameProduct: req.body.nameProduct,
             category: req.body.category,
@@ -37,7 +32,7 @@ const PostNewProductController = async (req, res) => {
             discount: req.body.discount,
             gain: req.body.gain,
             customer_id: req.customer.id,
-            Room_id: req.body.Room_id,
+            Rental_Id: req.rental._id,
         });
 
         const result = await product.save();
@@ -72,12 +67,7 @@ const PostNewProductsController = async (req, res) => {
         for (const item of data) {
             item.customer_id = req.customer.id;
         }
-        const roomIds = data.map(item => item.Room_id);
 
-        await Room.updateMany(
-            { _id: { $in: roomIds }, isUsed: false },
-            { $set: { isUsed: true } }
-        );
         await Customer.findByIdAndUpdate(req.customer.id, {
             $set: {
                 money: req.money,

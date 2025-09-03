@@ -3,6 +3,7 @@ const { verifyToken, verifyDeleteToken } = require("../verifyToken");
 const { validateAreaPOST, validateAreaPUT, validateAlarmMessage } = require("../../validations/area.valid");
 const Area = require("../../modules/Area/Area");
 const Owner = require("../../modules/Owners/Owner");
+const OwnerProfile = require("../../modules/Owners/OwnerProfile");
 // const Room = require("../../modules/Room/Room");
 const mongoose = require("mongoose");
 const { LIMIT_AREA, LIMIT_ROOMS } = require("../../values/env");
@@ -23,7 +24,11 @@ const verifyAreaPOST = async (req, res, next) => {
             if (!owner) {
                 return res.status(404).json({ message: "Owner not found" });
             }
-
+            // check owner profile
+            const ownerProfile = await OwnerProfile.findOne({ Owner_Id: req.owner.id });
+            if (!ownerProfile) {
+                return res.status(404).json({ message: "Owner profile not found" });
+            }
             // check area limit
             const areasCount = await Area.countDocuments({ Owner_Id: req.owner.id });
             if (areasCount >= LIMIT_AREA) {
@@ -59,7 +64,11 @@ const verifyAreaPUT = async (req, res, next) => {
             if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
                 return res.status(400).json({ message: "Invalid area ID." });
             }
-
+            // check owner profile
+            const ownerProfile = await OwnerProfile.findOne({ Owner_Id: req.owner.id });
+            if (!ownerProfile) {
+                return res.status(404).json({ message: "Owner profile not found" });
+            }
             // check area exists
             const area = await Area.findById(req.params.id);
             if (!area) {
@@ -93,6 +102,11 @@ const verifyGetAllAreas = async (req, res, next) => {
             const owner = await Owner.findById(req.owner.id);
             if (!owner) {
                 return res.status(404).json({ message: "Owner not found" });
+            }
+            // check owner profile
+            const ownerProfile = await OwnerProfile.findOne({ Owner_Id: req.owner.id });
+            if (!ownerProfile) {
+                return res.status(404).json({ message: "Owner profile not found" });
             }
             next();
         } catch (error) {
