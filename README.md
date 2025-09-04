@@ -22,7 +22,7 @@ Ultimately, Tager is not just about transactions—it is about building trust. E
 
 Start the project:
 
-npm start
+`npm start`
 
 Make sure to review the envHelper.txt file to correctly configure environment variables.
 
@@ -34,86 +34,57 @@ The frontend part of the project is currently under construction and will be ava
 
 #Project Routes
 
-Customer Auth
-POST http://192.168.1.138:8000/api/auth/register # Register
-POST http://192.168.1.138:8000/api/auth/login # Login
+## Project Routes
 
-Customer
-PUT http://192.168.1.138:8000/api/customer/:id # Update Customer
-
-Customer Profile
-POST http://192.168.1.138:8000/api/customer/profile/add # Add Profile
-GET http://192.168.1.138:8000/api/customer/profile # Get Profile
-PUT http://192.168.1.138:8000/api/customer/profile/update # Update Profile
-DELETE http://192.168.1.138:8000/api/customer/profile/delete # Delete Profile
-
-Customer Avatar
-PUT http://192.168.1.138:8000/api/customer/profile/image/upload # Upload Image
-DELETE http://192.168.1.138:8000/api/customer/profile/image/delete # Delete Image
-
-Money System
-PUT http://192.168.1.138:8000/api/money/control/push # Push Money
-PUT http://192.168.1.138:8000/api/money/control/update # Update Money
-
-Buys
-POST http://192.168.1.138:8000/api/buys/product # Buy Product
-POST http://192.168.1.138:8000/api/buys/products # Buy Products
-
-Sells
-DELETE http://192.168.1.138:8000/api/sells/68b9c6a8bc216547e7e0a37d # Sell Product
-POST http://192.168.1.138:8000/api/sells/count # Sell Products
-
-Product
-GET http://192.168.1.138:8000/api/product/route # Get Product
-PUT http://192.168.1.138:8000/api/product/route/:id # Update Product
-POST http://192.168.1.138:8000/api/product/route/search # Search Product
-
-Delete Product
-DELETE http://192.168.1.138:8000/api/delete_product/:id # Delete Product
-
-Report
-GET http://192.168.1.138:8000/api/report # Get Reports
-DELETE http://192.168.1.138:8000/api/report/delete # Delete All Reports
-
-Owner Auth
-POST http://192.168.1.138:8000/api/owner/auth/register # Register
-POST http://192.168.1.138:8000/api/owner/auth/login # Login
-
-Owner
-PUT http://192.168.1.138:8000/api/owner/update # Update Owner
-
-Owner Profile
-POST http://192.168.1.138:8000/api/owner/profile/add # Add Profile
-GET http://192.168.1.138:8000/api/owner/profile # Get Profile
-PUT http://192.168.1.138:8000/api/owner/profile/update # Update Profile
-DELETE http://192.168.1.138:8000/api/owner/profile/delete # Delete Profile
-
-Owner Avatar
-PUT http://192.168.1.138:8000/api/owner/profile/image/upload # Upload Image
-DELETE http://192.168.1.138:8000/api/owner/profile/image/delete # Delete Image
-
-Area
-POST http://192.168.1.138:8000/api/owner/area/create # Create Area
-GET http://192.168.1.138:8000/api/owner/area?q # Get Area
-PUT http://192.168.1.138:8000/api/owner/area/update/:id # Update Area
-GET http://192.168.1.138:8000/api/owner/area/one/:id # Get One Area
-PATCH http://192.168.1.138:8000/api/owner/area/delete/:id # Delete Area
-
-Room
-POST http://192.168.1.138:8000/api/room/create # Create Room
-GET http://192.168.1.138:8000/api/room/owner/rooms # Get Rooms for Owner
-GET http://192.168.1.138:8000/api/room/customer/rooms # Get Rooms for Customer
-PUT http://192.168.1.138:8000/api/room/update/:id # Update Room
-PATCH http://192.168.1.138:8000/api/room/delete/:id # Delete Room
-
-Rental
-POST http://192.168.1.138:8000/api/rental/sug-subscript # Add Rental from Customer
-PATCH http://192.168.1.138:8000/api/rental/updateSubscription/:id # Update Rental from Customer
-GET http://192.168.1.138:8000/api/rental # Get All Rentals
-PATCH http://192.168.1.138:8000/api/rental/request/:id # Accept/Reject Rental
-DELETE http://192.168.1.138:8000/api/rental/delete_subscription/:id # Delete Rental (Customer)
-PATCH http://192.168.1.138:8000/api/rental/owner/delete/:id # Delete Rental (Owner)
-GET http://192.168.1.138:8000/api/rental/request # Get All Requests (Owner)
+| Category             | Method | Endpoint                                                       | Description              |
+| -------------------- | ------ | -------------------------------------------------------------- | ------------------------ |
+| **Customer Auth**    | POST   | `http://192.168.1.138:8000/api/auth/register`                  | Register                 |
+|                      | POST   | `http://192.168.1.138:8000/api/auth/login`                     | Login                    |
+| **Customer**         | PUT    | `http://192.168.1.138:8000/api/customer/:id`                   | Update Customer          |
+| **Customer Profile** | POST   | `http://192.168.1.138:8000/api/customer/profile/add`           | Add Profile              |
+|                      | GET    | `http://192.168.1.138:8000/api/customer/profile`               | Get Profile              |
+|                      | PUT    | `http://192.168.1.138:8000/api/customer/profile/update`        | Update Profile           |
+|                      | DELETE | `http://192.168.1.138:8000/api/customer/profile/delete`        | Delete Profile           |
+| **Customer Avatar**  | PUT    | `http://192.168.1.138:8000/api/customer/profile/image/upload`  | Upload Image             |
+|                      | DELETE | `http://192.168.1.138:8000/api/customer/profile/image/delete`  | Delete Image             |
+| **Money System**     | PUT    | `http://192.168.1.138:8000/api/money/control/push`             | Push Money               |
+|                      | PUT    | `http://192.168.1.138:8000/api/money/control/update`           | Update Money             |
+| **Buys**             | POST   | `http://192.168.1.138:8000/api/buys/product`                   | Buy Product              |
+|                      | POST   | `http://192.168.1.138:8000/api/buys/products`                  | Buy Products             |
+| **Sells**            | DELETE | `http://192.168.1.138:8000/api/sells/68b9c6a8bc216547e7e0a37d` | Sell Product             |
+|                      | POST   | `http://192.168.1.138:8000/api/sells/count`                    | Sell Products            |
+| **Product**          | GET    | `http://192.168.1.138:8000/api/product/route`                  | Get Product              |
+|                      | PUT    | `http://192.168.1.138:8000/api/product/route/:id`              | Update Product           |
+|                      | POST   | `http://192.168.1.138:8000/api/product/route/search`           | Search Product           |
+| **Delete Product**   | DELETE | `http://192.168.1.138:8000/api/delete_product/:id`             | Delete Product           |
+| **Report**           | GET    | `http://192.168.1.138:8000/api/report`                         | Get Reports              |
+|                      | DELETE | `http://192.168.1.138:8000/api/report/delete`                  | Delete All Reports       |
+| **Owner Auth**       | POST   | `http://192.168.1.138:8000/api/owner/auth/register`            | Register                 |
+|                      | POST   | `http://192.168.1.138:8000/api/owner/auth/login`               | Login                    |
+| **Owner**            | PUT    | `http://192.168.1.138:8000/api/owner/update`                   | Update Owner             |
+| **Owner Profile**    | POST   | `http://192.168.1.138:8000/api/owner/profile/add`              | Add Profile              |
+|                      | GET    | `http://192.168.1.138:8000/api/owner/profile`                  | Get Profile              |
+|                      | PUT    | `http://192.168.1.138:8000/api/owner/profile/update`           | Update Profile           |
+|                      | DELETE | `http://192.168.1.138:8000/api/owner/profile/delete`           | Delete Profile           |
+| **Owner Avatar**     | PUT    | `http://192.168.1.138:8000/api/owner/profile/image/upload`     | Upload Image             |
+|                      | DELETE | `http://192.168.1.138:8000/api/owner/profile/image/delete`     | Delete Image             |
+| **Area**             | POST   | `http://192.168.1.138:8000/api/owner/area/create`              | Create Area              |
+|                      | GET    | `http://192.168.1.138:8000/api/owner/area?q`                   | Get Area                 |
+|                      | PUT    | `http://192.168.1.138:8000/api/owner/area/update/:id`          | Update Area              |
+|                      | GET    | `http://192.168.1.138:8000/api/owner/area/one/:id`             | Get One Area             |
+|                      | PATCH  | `http://192.168.1.138:8000/api/owner/area/delete/:id`          | Delete Area              |
+| **Room**             | POST   | `http://192.168.1.138:8000/api/room/create`                    | Create Room              |
+|                      | GET    | `http://192.168.1.138:8000/api/room/owner/rooms`               | Get Rooms for Owner      |
+|                      | GET    | `http://192.168.1.138:8000/api/room/customer/rooms`            | Get Rooms for Customer   |
+|                      | PUT    | `http://192.168.1.138:8000/api/room/update/:id`                | Update Room              |
+|                      | PATCH  | `http://192.168.1.138:8000/api/room/delete/:id`                | Delete Room              |
+| **Rental**           | POST   | `http://192.168.1.138:8000/api/rental/sug-subscript`           | Add Rental (Customer)    |
+|                      | PATCH  | `http://192.168.1.138:8000/api/rental/updateSubscription/:id`  | Update Rental (Customer) |
+|                      | GET    | `http://192.168.1.138:8000/api/rental`                         | Get All Rentals          |
+|                      | PATCH  | `http://192.168.1.138:8000/api/rental/request/:id`             | Accept/Reject Rental     |
+|                      | DELETE | `http://192.168.1.138:8000/api/rental/delete_subscription/:id` | Delete Rental (Customer) |
+|                      | PATCH  | `http://192.168.1.138:8000/api/rental/owner/delete/:id`        | Delete Rental (Owner)    |
+|                      | GET    | `http://192.168.1.138:8000/api/rental/request`                 | Get All Requests (Owner) |
 
 Conclusion
 
