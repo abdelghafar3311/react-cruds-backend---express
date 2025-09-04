@@ -23,7 +23,10 @@ const UpdateRoomController = async (req, res) => {
         };
         // update room
         const updatedRoom = await Room.findByIdAndUpdate(req.room._id, updateData, { new: true });
-
+        // update max rooms in area
+        await Area.findByIdAndUpdate(req.area._id, {
+            $inc: { maxRooms: 1 }
+        }, { new: true });
         // return updated room
         res.status(200).json({
             message: "Room updated successfully",

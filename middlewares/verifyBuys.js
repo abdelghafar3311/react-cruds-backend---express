@@ -38,11 +38,13 @@ const verifyTokenForProductBuy = async (req, res, next) => {
                 return res.status(422).json({ message: "your money is not enough" })
             }
             // check rental found
-            const rental = await Room.findById(req.body.Rental_Id);
-            if (!rental) {
+            const rental = await Rental.findById(req.body.Rental_Id);
+            if (!rental || rental.Customer_Id.toString() !== findId._id.toString()) {
                 return res.status(404).json({ message: "rental not found" });
             }
-
+            if (!rental || rental.isDeleted) {
+                return res.status(403).json({ message: "Rental will delete" });
+            }
             // create objects
             req.money = findId.money - pay;
             req.pay = pay;
@@ -81,9 +83,10 @@ const verifyTokenForProductsBuy = async (req, res, next) => {
             // 4. validate rooms existence and status
             for (const item of data) {
                 const rental = rentalMap.get(item.Rental_Id.toString());
-                if (!rental) {
-                    return res.status(404).json({ message: "Rental not found" });
+                if (!rental || rental.Customer_Id.toString() !== findId._id.toString()) {
+                    return res.status(404).json({ message: "rental not found" });
                 }
+
                 if (rental.isDeleted) {
                     return res.status(403).json({ message: "Rental will delete" });
                 }

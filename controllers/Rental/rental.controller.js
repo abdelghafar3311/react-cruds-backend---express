@@ -3,6 +3,7 @@ const Rental = require("../../modules/Rental/Rental");
 const { Customer } = require("../../modules/Customer/Customer_Module");
 const RentalRequest = require("../../modules/Rental/RentalRequest");
 const OwnerProfile = require("../../modules/Owners/OwnerProfile");
+const Room = require("../../modules/Room/Room");
 // services
 const addTimeToDate = require("../../services/addTimeToDate");
 // token
@@ -88,7 +89,7 @@ const ReqRentalAcceptController = async (req, res) => {
             const GetProfile = await OwnerProfile.findOne({ Owner_Id: req.ownerDB._id });
             console.log("test: ", req.ownerDB);
             const newMoneyOwner = GetProfile.money + reqRental.pay;
-            const ownerProfile = await OwnerProfile.findByIdAndUpdate(req.ownerDB._id, { $set: { money: newMoneyOwner } }, { new: true });
+            await OwnerProfile.findByIdAndUpdate(req.ownerDB._id, { $set: { money: newMoneyOwner } }, { new: true });
             // update rental and add info time and pay
             const { result, error } = addTimeToDate(new Date(), reqRental.time);
             if (error) {
@@ -105,6 +106,8 @@ const ReqRentalAcceptController = async (req, res) => {
                     subscriptionState: "active"
                 }
             }, { new: true });
+            // make room is rental
+            await Room.findByIdAndUpdate(rental.Room_Id, { $set: { RentalType: "rental" } }, { new: true });
             // delete request
             await RentalRequest.findByIdAndDelete(req.params.id);
             // return result
@@ -173,6 +176,8 @@ const UpdateSubscriptionController = async (req, res) => {
                 pay: req.moneyRental
             }
         }, { new: true });
+        // update room to rental
+        await Room.findByIdAndUpdate(req.room._id, { $set: { RentalType: "rental" } }, { new: true });
         // add money
         await OwnerProfile.findByIdAndUpdate(req.profile._id, {
             money: req.addMoneyForOwner

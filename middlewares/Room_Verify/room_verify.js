@@ -33,6 +33,11 @@ const roomUpdateVerify = (req, res, next) => {
             if (room.isUsed) {
                 return res.status(400).json({ message: "Room is currently in use and cannot be updated" });
             }
+            const area = await Area.findOne({ _id: room.Area_Id, Owner_Id: req.owner.id });
+            if (!area) {
+                return res.status(404).json({ message: "Area not found or you are not authorized to access it" });
+            }
+            req.area = area; // attach area to request object
 
             req.room = room; // attach room to request object
             next();
@@ -47,6 +52,8 @@ const roomUpdateVerify = (req, res, next) => {
 const roomCreateVerify = (req, res, next) => {
     verifyToken(req, res, async () => {
         try {
+            // variables 
+            let countRooms = 0;
             const { error } = validCreateRoom(req.body);
             if (error) {
                 return res.status(400).json({ message: error.details[0].message });
@@ -61,6 +68,7 @@ const roomCreateVerify = (req, res, next) => {
             if (!area) {
                 return res.status(404).json({ message: "Area not found or you are not authorized to access it" });
             }
+
             // check if room already exists in the area
             const existingRoom = await Room.findOne({ Area_Id: req.body.Area_Id, NumberRoom: req.body.NumberRoom });
             if (existingRoom) {
@@ -71,8 +79,10 @@ const roomCreateVerify = (req, res, next) => {
             if (roomCount >= LIMIT_ROOMS) {
                 return res.status(400).json({ message: `Maximum number of rooms (${LIMIT_ROOMS}) exceeded for this area.` });
             }
+            countRooms = area.maxRooms + 1
             req.area = area; // attach area to request object
             req.owner_id = owner._id; // attach owner to request object
+            req.countRooms = countRooms;
             next();
         } catch (error) {
             console.error("Middleware: ", error);
@@ -115,7 +125,7 @@ const getCustomerRoomsVerify = (req, res, next) => {
             }
             // get rooms
             const rooms = await Room.find({
-                isUsed: { $eq: false },
+                RentalType: { $eq: "null" },
                 status: { $eq: true }
             }).populate("Area_Id", "nameArea maxRooms status").lean();
             if (rooms.length === 0) {

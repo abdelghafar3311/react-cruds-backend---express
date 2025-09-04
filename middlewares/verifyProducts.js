@@ -1,11 +1,10 @@
-const jwt = require("jsonwebtoken");
-const { secreteKey } = require("../values/env");
 // for product verify
 const { validateSearching } = require("../validations/search.valid");
 const { validateUpdateProduct } = require("../validations/updateProduct.valid");
 // data Modules
 const { Product } = require("../modules/Product/Product")
-const { Customer } = require("../modules/Customer/Customer_Module")
+const { Customer } = require("../modules/Customer/Customer_Module");
+const Rental = require("../modules/Rental/Rental");
 // verify token
 const { verifyToken } = require("./verifyToken");
 // verify for get products
@@ -62,6 +61,16 @@ const verifyTokenForProductPut = async (req, res, next) => {
 
                 if (isNameExist) {
                     return res.status(400).json({ message: "The product name is already used by another product." });
+                }
+            }
+            // rental check
+            if (req.body.Rental_Id) {
+                const rental = await Rental.findById(req.body.Rental_Id);
+                if (!rental || rental.Customer_Id.toString() !== findId._id.toString()) {
+                    return res.status(404).json({ message: "rental not found" });
+                }
+                if (rental.isDeleted) {
+                    return res.status(403).json({ message: "Rental will delete" });
                 }
             }
             const oldValues = {

@@ -5,7 +5,7 @@ const Joi = require("joi");
 
 const validateSearching = (obj) => {
     const schema = Joi.object({
-        type: Joi.valid("name", "category").required(),
+        type: Joi.valid("name", "category").default("name"),
         word: Joi.string().min(1).max(200).trim().required()
     });
     return schema.validate(obj);

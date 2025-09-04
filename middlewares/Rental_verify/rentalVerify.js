@@ -34,6 +34,9 @@ const VerifyPostRental = (req, res, next) => {
             if (room.isDeleted) {
                 return res.status(403).json({ message: "Room will delete" });
             }
+            if (room.RentalType === "rental" || room.RentalType === "expire") {
+                return res.status(403).json({ message: "Room is not available for rental" });
+            }
             price_pay = room.price * +req.body.timeNumber;
             if (room.Discount > 0) {
                 price_pay = room.Discount * +req.body.timeNumber;

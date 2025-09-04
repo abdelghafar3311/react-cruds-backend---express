@@ -20,8 +20,14 @@ const DeleteProductController = async (req, res) => {
                 money: req.custom_money
             }
         }, { new: true });
-        const reportIds = Array.isArray(req.reportId) ? req.reportId : [req.reportId];
-        await Report.deleteMany({ _id: { $in: reportIds } });
+        // new report
+        const report = new Report({
+            report_for: "sells",
+            money_push: req.buys,
+            customer_id: req.customer.id,
+            product_id: req.params.id
+        });
+        await report.save();
         const { sells, money } = customer._doc;
         await Product.findByIdAndDelete(req.params.id);
         return res.status(200).json({ message: "Delete successful", info: { sells, money } });

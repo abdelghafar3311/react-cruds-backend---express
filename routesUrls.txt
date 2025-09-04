@@ -1,0 +1,65 @@
+/// Customer Auth
+> Post  http://192.168.1.138:8000/api/auth/register  Register
+> Post  http://192.168.1.138:8000/api/auth/login  Login
+/// Customer 
+> Put  http://192.168.1.138:8000/api/customer/:id  Update Customer
+/// Customer Profile
+> Post  http://192.168.1.138:8000/api/customer/profile/add  Add Profile
+> Get  http://192.168.1.138:8000/api/customer/profile  Get Profile
+> Put  http://192.168.1.138:8000/api/customer/profile/update  Update Profile
+> Delete  http://192.168.1.138:8000/api/customer/profile/delete  Delete Profile
+/// Customer Avatar
+> Put  http://192.168.1.138:8000/api/customer/profile/image/upload  Upload Image
+> Delete  http://192.168.1.138:8000/api/customer/profile/image/delete  Delete Image
+/// Money System
+> Put http://192.168.1.138:8000/api/money/control/push  Push Money
+> Put http://192.168.1.138:8000/api/money/control/update  Update Money
+/// Buys
+> Post  http://192.168.1.138:8000/api/buys/product  Buy Product
+> Post  http://192.168.1.138:8000/api/buys/products  Buy Products
+/// Sells
+> Delete  http://192.168.1.138:8000/api/sells/68b9c6a8bc216547e7e0a37d  Sell Product
+> Post  http://192.168.1.138:8000/api/sells/count  Sell Products
+/// Product
+> Get  http://192.168.1.138:8000/api/product/route  Get Product
+> Put  http://192.168.1.138:8000/api/product/route/:id  Update Product
+> Post  http://192.168.1.138:8000/api/product/route/search  Search Product
+/// Delete Product
+> Delete  http://192.168.1.138:8000/api/delete_product/:id  Delete Product
+/// Report
+> Get  http://192.168.1.138:8000/api/report  Get Reports
+> Delete  http://192.168.1.138:8000/api/report/delete  Delete All Reports
+/// Owner Auth
+> Post  http://192.168.1.138:8000/api/owner/auth/register  Register
+> Post  http://192.168.1.138:8000/api/owner/auth/login  Login
+/// Owner
+> Put  http://192.168.1.138:8000/api/owner/update  Update Owner
+/// Owner Profile
+> Post  http://192.168.1.138:8000/api/owner/profile/add  Add Profile
+> Get  http://192.168.1.138:8000/api/owner/profile  Get Profile
+> Put  http://192.168.1.138:8000/api/owner/profile/update  Update Profile
+> Delete  http://192.168.1.138:8000/api/owner/profile/delete  Delete Profile
+/// Owner Avatar
+> Put  http://192.168.1.138:8000/api/owner/profile/image/upload  Upload Image
+> Delete  http://192.168.1.138:8000/api/owner/profile/image/delete  Delete Image
+/// Area
+> Post  http://192.168.1.138:8000/api/owner/area/create  Create Area
+> Get  http://192.168.1.138:8000/api/owner/area?q  Get Area
+> Put  http://192.168.1.138:8000/api/owner/area/update/:id  Update Area
+> Get  http://192.168.1.138:8000/api/owner/area/one/:id  Get One Area
+> Patch  http://192.168.1.138:8000/api/owner/area/delete/:id  Delete Area
+/// Room
+> Post  http://192.168.1.138:8000/api/room/create  Create Room
+> Get  http://192.168.1.138:8000/api/room/owner/rooms  Get Rooms for Owner
+> Get  http://192.168.1.138:8000/api/room/customer/rooms  Get Rooms for Customer
+> Put  http://192.168.1.138:8000/api/room/update/:id  Update Room
+> Patch  http://192.168.1.138:8000/api/room/delete/:id  Delete Room
+/// Rental
+> Post  http://192.168.1.138:8000/api/rental/sug-subscript  Add Rental from Customer
+> Patch  http://192.168.1.138:8000/api/rental/updateSubscription/:id  Update Rental from Customer
+> Get  http://192.168.1.138:8000/api/rental Get All Rentals (Owner or Customer)
+> Patch  http://192.168.1.138:8000/api/rental/request/:id  Accept or Reject Rental from Owner
+> Patch  http://192.168.1.138:8000/api/rental/updateSubscription/:id  Update Rental from Customer
+> Delete  http://192.168.1.138:8000/api/rental/delete_subscription/:id  Delete Rental from Customer
+> Patch  http://192.168.1.138:8000/api/rental/owner/delete/:id  Delete Rental from Owner
+> Get  http://192.168.1.138:8000/api/rental/request  Get All Request Rentals from Owner only

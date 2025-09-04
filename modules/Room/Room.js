@@ -44,6 +44,10 @@ const RoomSchema = new mongoose.Schema({
     Discount: {
         type: Number,
         default: 0
+    }, RentalType: {
+        type: String,
+        enum: ["null", "rental", "expire"],
+        default: "null"
     },
     Area_Id: {
         type: mongoose.Schema.Types.ObjectId,

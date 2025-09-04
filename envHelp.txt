@@ -1,0 +1,21 @@
+# URL MongoDB
+MONGODB_URL= Data Base
+# System in network
+PORT=8000
+HOST="192.168.1.138"
+
+# jwt secrete key
+SECRETE_KAY= Key here
+SECRETE_KAY_DELETED= Key here
+SECRETE_KAY_RENTAL= Key here
+# Repo Github Token for image upload
+GITHUB_TOKEN_UPLOAD= Make this from github 
+GITHUB_USERNAME= "your_github_username" # Replace with your GitHub username
+GITHUB_REPO= "your_repository_name" # Replace with your GitHub repository name
+GITHUB_BRANCH= "your_desired_branch_name" # Replace with your desired branch name
+
+# the sitting of secuirity system
+LIMIT_AREA=5
+LIMIT_ROOMS=8
+LIMIT_OWNER=6
+LIMIT_CUSTOMER=280

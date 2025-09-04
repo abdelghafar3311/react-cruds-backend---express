@@ -60,6 +60,8 @@ const RentalReqWillDelete = async () => {
             rentals.map(async (rental) => {
                 const { isValid } = verifyRentalToken(rental.DeleteToken);
                 if (!isValid) {
+                    // update room to null
+                    await Room.updateMany({ _id: rental.Room_Id }, { $set: { RentalType: "null" } });
                     await RentalRequest.findByIdAndDelete(rental._id);
                     await Rental.findByIdAndDelete(rental.Rental_Id);
                     return console.log("delete req rental id:", rental._id);
@@ -81,6 +83,8 @@ const RentalSubscriptLive = async () => {
                 const { isValid } = verifyRentalToken(rental.expires);
                 if (!isValid) {
                     await Rental.findByIdAndUpdate(rental._id, { $set: { subscriptionState: "expired" } });
+                    // update room to expire
+                    await Room.updateOne({ _id: rental.Room_Id }, { $set: { RentalType: "expire" } });
                     return console.log("update expired id: ", rental._id);
                 }
             })
@@ -134,6 +138,8 @@ const DeleteRoomLive = async () => {
                         { $unset: { rentalId: "" } }
                     );
                     await Rental.deleteMany({ Room_id: a._id });
+                    // -1 in max rooms in area
+                    await Area.updateOne({ _id: a.Area_Id }, { $inc: { maxRooms: -1 } });
                     // Delete the room itself
                     await Room.findByIdAndDelete(a._id);
                     return console.log(`Deleted expired room: ${a._id}`);
