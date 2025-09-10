@@ -58,6 +58,14 @@ const VerifyPostRental = (req, res, next) => {
             if (owner._id.toString() !== room.Owner_Id.toString()) {
                 return res.status(403).json({ message: "You are not allowed to post a rental for this room" });
             }
+            // get owner profile
+            const ownerProfile = await OwnerProfile.findOne({ Owner_Id: owner._id });
+            if (!ownerProfile) {
+                return res.status(400).json({ message: "Error In Rental, Please Try Again" });
+            }
+            if (ownerProfile.isDeleted) {
+                return res.status(403).json({ message: "Owner will delete" });
+            }
             // check if room is already rented
             const rental = await Rented.findOne({ Room_Id: room._id });
             if (rental && rental.subscriptionState === "active") {
@@ -196,6 +204,9 @@ const VerifyPatchRental = (req, res, next) => {
             const profile = await OwnerProfile.findOne({ Owner_Id: owner._id });
             if (!profile) {
                 return res.status(500).json({ message: "Error Server Internal, Please Try Again in anther time" });
+            }
+            if (profile.isDeleted) {
+                return res.status(403).json({ message: "Owner will delete" });
             }
             // check owner has this room
             if (owner._id.toString() !== rental.Owner_Id.toString()) {

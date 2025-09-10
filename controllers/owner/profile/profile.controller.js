@@ -95,9 +95,12 @@ const GetProfileController = async (req, res) => {
 
 const DeleteAccountController = async (req, res) => {
     try {
-        await OwnerProfile.findByIdAndDelete(req.profile._id);
-        await Owner.findByIdAndDelete(req.owner.id);
-        return res.status(200).json({ message: "Profile deleted successfully" });
+        await OwnerProfile.findByIdAndUpdate(req.profile._id, {
+            $set: {
+                isDeleted: true
+            }
+        }, { new: true });
+        return res.status(200).json({ message: "Successfully, will be deleted when Customer expires subscription in Rooms" });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal Server Error" })

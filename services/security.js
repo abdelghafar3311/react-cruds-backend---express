@@ -5,6 +5,8 @@ const Room = require("../modules/Room/Room");
 const Rental = require("../modules/Rental/Rental");
 const RentalRequest = require("../modules/Rental/RentalRequest");
 const { Product } = require("../modules/Product/Product");
+const OwnerProfile = require("../modules/Owners/OwnerProfile");
+const Owner = require("../modules/Owners/Owner");
 const mongoose = require("mongoose");
 // middlewares
 const { verifyRentalToken } = require("../middlewares/verifyToken");
@@ -148,6 +150,37 @@ const DeleteRoomLive = async () => {
         );
     } catch (error) {
         return console.error("Delete Room error: ", error);
+    }
+}
+
+// Delete Owner Account
+const DeleteOwnerAccountLive = async () => {
+    try {
+        const ownersProfile = await OwnerProfile.find({ isDeleted: true });
+        await Promise.all(
+            ownersProfile.map(async (a) => {
+                const rentals = await Rental.exists({ Owner_Id: a.Owner_Id, subscriptionState: "active" });
+
+                if (!rentals) {
+                    // Delete the owner itself
+                    // Delete Rental Request
+                    await RentalRequest.deleteMany({ Owner_Id: a.Owner_Id });
+                    // Delete Rentals
+                    await Rental.deleteMany({ Owner_Id: a.Owner_Id });
+                    // Delete Area
+                    await Area.deleteMany({ Owner_Id: a.Owner_Id });
+                    // Delete Rooms
+                    await Room.deleteMany({ Owner_Id: a.Owner_Id });
+                    // delete owner
+                    await Owner.findByIdAndDelete(a.Owner_Id);
+                    // delete owner profile
+                    await OwnerProfile.findByIdAndDelete(a._id);
+                    return console.log(`Deleted owner Account: ${a.Owner_Id}`);
+                }
+            })
+        )
+    } catch (error) {
+        return console.error("Delete Owner error: ", error);
     }
 }
 

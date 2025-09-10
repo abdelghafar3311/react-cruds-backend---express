@@ -34,6 +34,9 @@ const ProfileSchema = new mongoose.Schema({
     description: {
         type: String,
         trim: true
+    }, isDeleted: {
+        type: Boolean,
+        default: false
     },
     Owner_Id: {
         type: mongoose.Schema.Types.ObjectId,

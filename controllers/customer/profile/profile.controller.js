@@ -1,7 +1,10 @@
 // models
 const CustomerProfile = require('../../../modules/Customer/CustomerProfile');
 const { Customer } = require('../../../modules/Customer/Customer_Module');
-
+const { Product } = require("../../../modules/Product/Product");
+const Rental = require("../../../modules/Rental/Rental");
+const Room = require("../../../modules/Room/Room");
+const { Report } = require("../../../modules/Report/Report");
 /**
  * @method Post
  * @description  Post new customer profile
@@ -93,8 +96,24 @@ const GetProfileController = async (req, res) => {
 
 const DeleteAccountController = async (req, res) => {
     try {
+        // Delete Products
+        await Product.deleteMany({ Customer_Id: req.customer.id });
+        // Change Rentals to null in Rooms
+        const Rentals = await Rental.find({ Customer_Id: req.customer.id });
+        await Promise.all(
+            Rentals.map(async (rental) => {
+                await Room.updateMany({ _id: rental.Room_Id }, { $set: { RentalType: "null" } });
+            })
+        );
+        // Delete Rentals
+        await Rental.deleteMany({ Customer_Id: req.customer.id });
+        // Delete Reports
+        await Report.deleteMany({ Customer_Id: req.customer.id });
+        // Delete Profile
         await CustomerProfile.findByIdAndDelete(req.profile._id);
+        // Delete Customer
         await Customer.findByIdAndDelete(req.customer.id);
+        // Return
         return res.status(200).json({ message: "Profile deleted successfully" });
     } catch (error) {
         console.error(error);
