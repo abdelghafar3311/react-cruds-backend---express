@@ -21,7 +21,7 @@ const CreateProfileController = async (req, res) => {
             Owner_Id: req.owner.id,
             name: req.body.name,
             money: req.body.money || 0,
-            Avatar: req.body.Avatar || "images/owner.png",
+            Avatar: req.body.Avatar,
             phone: req.body.phone,
             address: req.body.address,
             description: req.body.description || ""

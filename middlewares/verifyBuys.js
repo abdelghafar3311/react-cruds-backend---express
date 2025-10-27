@@ -79,7 +79,11 @@ const verifyTokenForProductsBuy = async (req, res, next) => {
 
             // 3. make fast lookup map
             const rentalMap = new Map(rentals.map(r => [r._id.toString(), r]));
-
+            // check id
+            const findId = await Customer.findById(req.customer.id);
+            if (!findId) {
+                return res.status(400).json({ message: "Your account could not be found in our records. Please try again or contact support." });
+            }
             // 4. validate rooms existence and status
             for (const item of data) {
                 const rental = rentalMap.get(item.Rental_Id.toString());
@@ -91,11 +95,7 @@ const verifyTokenForProductsBuy = async (req, res, next) => {
                     return res.status(403).json({ message: "Rental will delete" });
                 }
             }
-            // check id
-            const findId = await Customer.findById(req.customer.id);
-            if (!findId) {
-                return res.status(400).json({ message: "Your account could not be found in our records. Please try again or contact support." });
-            }
+
             // check has profile
             const profile = await Profile.findOne({ Customer_Id: findId._id });
             if (!profile) {

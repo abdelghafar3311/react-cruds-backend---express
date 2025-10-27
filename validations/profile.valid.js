@@ -9,9 +9,6 @@ const postProfileSchema = (obj) => {
             .trim(),
         money: Joi.number()
             .default(0),
-        Avatar: Joi.string()
-            .default("images/owner.png")
-            .trim(),
         phone: Joi.string()
             .pattern(/^\+?\d{10,15}$/)
             .trim(),
@@ -35,9 +32,6 @@ const validateProfileUpdate = (obj) => {
             .trim(),
         money: Joi.number().min(0)
             .default(0),
-        Avatar: Joi.string().uri({ allowRelative: true })
-            .default("images/owner.png")
-            .trim(),
         phone: Joi.string()
             .pattern(/^\+?\d{10,15}$/)
             .trim(),

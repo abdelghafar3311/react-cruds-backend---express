@@ -22,9 +22,9 @@ const CreateProfileController = async (req, res) => {
         const newProfile = new CustomerProfile({
             Customer_Id: req.customer.id,
             name: req.body.name,
-            Avatar: req.body.Avatar || "images/customer.png",
-            phone: req.body.phone,
-            address: req.body.address,
+            Avatar: req.body.Avatar,
+            phone: req.body.phone || "",
+            address: req.body.address || "",
             description: req.body.description || ""
         });
         await newProfile.save();
@@ -50,7 +50,13 @@ const UpdateProfileController = async (req, res) => {
     try {
         const updatedProfile = await CustomerProfile.findByIdAndUpdate(req.profile._id, {
             $set: {
-                ...req.body
+                name: req.body.name,
+                Avatar: req.body.Avatar,
+                phone: req.body.phone,
+                address: req.body.address,
+                description: req.body.description,
+                status: req.body.status,
+
             }
         }, { new: true });
 

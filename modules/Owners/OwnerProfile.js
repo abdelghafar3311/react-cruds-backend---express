@@ -14,7 +14,7 @@ const ProfileSchema = new mongoose.Schema({
     },
     Avatar: {
         type: String,
-        default: "images/owner.png",
+        default: "https://raw.githubusercontent.com/abdelghafar3311/upload_images_express_curds/main/uploads/1758209587568-avatar.png",
         trim: true
     },
     phone: {
@@ -34,7 +34,8 @@ const ProfileSchema = new mongoose.Schema({
     description: {
         type: String,
         trim: true
-    }, isDeleted: {
+    },
+    isDeleted: {
         type: Boolean,
         default: false
     },

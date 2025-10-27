@@ -20,7 +20,7 @@ const UpdateCustomerController = async (req, res) => {
             return res.status(400).json({ message: "syntax is wrong", error: error.details[0].message })
         }
         // check if not found
-        const findCustomer = await Customer.findById(req.params.id);
+        const findCustomer = await Customer.findById(req.customer.id);
         if (!findCustomer) {
             return res.status(404).json({ message: "customer not found" });
         }
@@ -30,7 +30,7 @@ const UpdateCustomerController = async (req, res) => {
             req.body.password = await bcrypt.hash(req.body.password, salt);
         }
         // update
-        const UpdateCustomer = await Customer.findByIdAndUpdate(req.params.id, {
+        const UpdateCustomer = await Customer.findByIdAndUpdate(req.customer.id, {
             $set: {
                 email: req.body.email,
                 password: req.body.password,
@@ -47,10 +47,32 @@ const UpdateCustomerController = async (req, res) => {
                 message: "The provided input is not valid."
             });
         }
-        res.status(500).json({ message: "Internal Server Error", error })
+        console.log(error)
+        res.status(500).json({ message: "Internal Server Error" })
+    }
+}
+
+/**
+ * @method GET
+ * @description  get customer
+ * @route /api/customer/get
+ * @access private
+ */
+
+const GetCustomerController = async (req, res) => {
+    try {
+        const customer = await Customer.findById(req.customer.id).select("-password");
+        if (!customer) {
+            return res.status(404).json({ message: "customer not found" });
+        }
+        return res.status(200).json({ customer });
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Internal Server Error" })
     }
 }
 
 module.exports = {
-    UpdateCustomerController
+    UpdateCustomerController,
+    GetCustomerController
 }

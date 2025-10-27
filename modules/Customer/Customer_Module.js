@@ -36,15 +36,6 @@ const CustomerSchema = new mongoose.Schema({
         type: Number,
         min: 0,
         default: 0
-    },
-    isBlocked: {
-        type: Boolean,
-        default: false
-    },
-    BlockedMessage: {
-        type: String,
-        trim: true,
-        default: ""
     }
     // Area type id of Area data base
 }, { timestamps: true });

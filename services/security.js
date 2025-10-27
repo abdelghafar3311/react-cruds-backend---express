@@ -7,11 +7,12 @@ const RentalRequest = require("../modules/Rental/RentalRequest");
 const { Product } = require("../modules/Product/Product");
 const OwnerProfile = require("../modules/Owners/OwnerProfile");
 const Owner = require("../modules/Owners/Owner");
-const mongoose = require("mongoose");
+const Notification = require("../modules/Notification/Notification");
 // middlewares
-const { verifyRentalToken } = require("../middlewares/verifyToken");
-const { CreateTokenRental } = require("../middlewares/Token");
-
+const { verifyRentalToken, verifyNotifyReadToken, verifyNotifyDeleteToken } = require("../middlewares/verifyToken");
+const { CreateTokenRental, CreateDeleteToken } = require("../middlewares/Token");
+// add time date
+const addTimeToDate = require("../services/addTimeToDate");
 // security cron job
 // check req rental will accept but has rental is pending
 const RentalReqWillAccept = async () => {
@@ -19,35 +20,29 @@ const RentalReqWillAccept = async () => {
         const acceptRentals = await Rental.find({ isAccept: "accept" });
 
         for (const rental of acceptRentals) {
+            // get room
             const room = await Room.findById(rental.Room_Id);
             if (!room) return await Rental.findByIdAndDelete(rental._id);
-            const pendingRentals = await Rental.find({ Room_Id: room._id, isAccept: "pending" });
-            for (const pendingRental of pendingRentals) {
-                const token = CreateTokenRental(
-                    {
-                        room: pendingRental.Room_Id,
-                        customer: pendingRental.Customer_Id,
-                        owner: pendingRental.Owner_Id,
-                        area: pendingRental.Area_Id
-                    },
-                    "2m"
-                );
+            const token = CreateTokenRental(
+                {
+                    room: rental.Room_Id,
+                    owner: rental.Owner_Id,
+                    area: rental.Area_Id
+                },
+                "3h"
+            );
 
-                await RentalRequest.updateMany(
-                    { Rental_Id: pendingRental._id },
-                    { $set: { willDelete: true, DeleteToken: token } }
-                );
+            const updatedDocs = await RentalRequest.find(
+                { Rental_Id: rental._id, willDelete: false, status: "pending" }
+            );
 
+            await RentalRequest.updateMany(
+                { Rental_Id: rental._id, willDelete: false, status: "pending" },
+                { $set: { willDelete: true, DeleteToken: token, status: "rejected" } }
+            );
 
-                await Rental.updateMany({ _id: pendingRental._id }, {
-                    $set: {
-                        isAccept: "reject",
-                        rejectToken: token
-                    }
-                });
+            updatedDocs.length > 0 && console.log("Updated Docs IDs:", updatedDocs.map(doc => doc._id));
 
-                console.log("update will delete id: ", pendingRental._id);
-            }
         }
     } catch (error) {
         console.error("rental request for get accept rental error: ", error);
@@ -63,9 +58,8 @@ const RentalReqWillDelete = async () => {
                 const { isValid } = verifyRentalToken(rental.DeleteToken);
                 if (!isValid) {
                     // update room to null
-                    await Room.updateMany({ _id: rental.Room_Id }, { $set: { RentalType: "null" } });
-                    await RentalRequest.findByIdAndDelete(rental._id);
-                    await Rental.findByIdAndDelete(rental.Rental_Id);
+                    // await Room.updateMany({ _id: rental.Room_Id }, { $set: { RentalType: "null" } });
+                    await RentalRequest.deleteOne({ _id: rental._id });
                     return console.log("delete req rental id:", rental._id);
                 }
             })
@@ -86,7 +80,24 @@ const RentalSubscriptLive = async () => {
                 if (!isValid) {
                     await Rental.findByIdAndUpdate(rental._id, { $set: { subscriptionState: "expired" } });
                     // update room to expire
-                    await Room.updateOne({ _id: rental.Room_Id }, { $set: { RentalType: "expire" } });
+                    const room = await Room.updateOne({ _id: rental.Room_Id }, { $set: { RentalType: "expire" } });
+                    // create notify for customer and owner
+                    const notifyCustomer = new Notification({
+                        notifyType: "info",
+                        notifyTitle: "Rental Expired",
+                        notifyMessage: `${room.nameRoom} is expired`,
+                        User_Id: rental.Customer_Id,
+                        User_Type: "Customer"
+                    });
+                    const notifyOwner = new Notification({
+                        notifyType: "info",
+                        notifyTitle: "Rental Expired",
+                        notifyMessage: `${room.nameRoom} is expired`,
+                        User_Id: rental.Owner_Id,
+                        User_Type: "Owner"
+                    });
+                    await notifyCustomer.save();
+                    await notifyOwner.save();
                     return console.log("update expired id: ", rental._id);
                 }
             })
@@ -114,7 +125,7 @@ const DeleteAreaLive = async () => {
                     // Delete rooms associated with the area
                     await Room.deleteMany({ Area_Id: a._id });
                     // Delete the area itself
-                    await Area.findByIdAndDelete(a._id);
+                    await Area.deleteOne({ _id: a._id });
                     return console.log(`Deleted expired area: ${a._id}`);
                 }
             })
@@ -143,7 +154,7 @@ const DeleteRoomLive = async () => {
                     // -1 in max rooms in area
                     await Area.updateOne({ _id: a.Area_Id }, { $inc: { maxRooms: -1 } });
                     // Delete the room itself
-                    await Room.findByIdAndDelete(a._id);
+                    await Room.deleteOne({ _id: a._id });
                     return console.log(`Deleted expired room: ${a._id}`);
                 }
             })
@@ -172,9 +183,9 @@ const DeleteOwnerAccountLive = async () => {
                     // Delete Rooms
                     await Room.deleteMany({ Owner_Id: a.Owner_Id });
                     // delete owner
-                    await Owner.findByIdAndDelete(a.Owner_Id);
+                    await Owner.deleteOne({ _id: a.Owner_Id });
                     // delete owner profile
-                    await OwnerProfile.findByIdAndDelete(a._id);
+                    await OwnerProfile.deleteOne({ _id: a._id });
                     return console.log(`Deleted owner Account: ${a.Owner_Id}`);
                 }
             })
@@ -194,7 +205,7 @@ const DeleteRentalLive = async () => {
 
                 if (!activeRentals) {
                     // Delete the rental itself
-                    await Rental.findByIdAndDelete(a._id);
+                    await Rental.deleteOne({ _id: a._id });
                     return console.log(`Deleted expired rental: ${a._id}`);
                 }
             })
@@ -204,11 +215,69 @@ const DeleteRentalLive = async () => {
     }
 }
 
+// make notifications finished read to delete active
+const TransNotifiesFromReadToDelete = async () => {
+    try {
+        // get all notifies have isRead true and isDeleted false
+        const notifies = await Notification.find({ isRead: true, isDeleted: false });
+        await Promise.all(
+            notifies.map(async (notify) => {
+                // verify token
+                const { isValid } = verifyNotifyReadToken(notify.TokenIsRead);
+                if (!isValid) {
+                    // update isDeleted to true and create token
+                    const token = CreateDeleteToken({ id: notify.User_Id }, "3d");
+                    const { result, error } = addTimeToDate(new Date(), "3d");
+                    if (error) {
+                        console.error(`Date error for notify ${notify._id}:`, error);
+                        return;
+                    }
+                    await Notification.updateOne(
+                        { _id: notify._id },
+                        {
+                            $set: {
+                                isDeleted: true,
+                                TokenIsDeleted: token,
+                                DateWillDelete: result
+                            }
+                        }
+                    );
+                    return console.log(`Deleted notify: ${notify._id} in date: ${result}`);
+                }
+
+            })
+        )
+    } catch (error) {
+        return console.error("Delete notify error: ", error);
+    }
+}
+
+// Delete Notification expire Toke in Delete
+const DeleteNotifyWillDelete = async () => {
+    try {
+        const notifications = await Notification.find({ isDeleted: true });
+        await Promise.all(
+            notifications.map(async (notify) => {
+                const { isValid } = verifyNotifyDeleteToken(notify.TokenIsDeleted);
+                if (!isValid) {
+                    await Notification.deleteOne({ _id: notify._id });
+                    return console.log(`Deleted notify: ${notify._id}`);
+                }
+            })
+        );
+    } catch (error) {
+        return console.error("Delete notify error: ", error);
+    }
+}
+
 module.exports = {
     RentalReqWillAccept,
     RentalReqWillDelete,
     RentalSubscriptLive,
     DeleteAreaLive,
     DeleteRoomLive,
-    DeleteRentalLive
+    DeleteRentalLive,
+    DeleteOwnerAccountLive,
+    TransNotifiesFromReadToDelete,
+    DeleteNotifyWillDelete
 }

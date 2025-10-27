@@ -41,7 +41,9 @@ const UpdateMoneyController = async (req, res) => {
 
         const updateCustomer = await Customer.findByIdAndUpdate(req.customer.id, {
             $set: {
-                money: +req.body.money
+                money: req.body.money,
+                sells: req.body.sells,
+                buys: req.body.buys
             }
         }, { new: true });
 

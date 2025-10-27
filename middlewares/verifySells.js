@@ -1,5 +1,3 @@
-const jwt = require("jsonwebtoken");
-const { secreteKey } = require("../values/env");
 // for product verify
 const { Product } = require("../modules/Product/Product");
 const { Customer } = require("../modules/Customer/Customer_Module");
@@ -27,8 +25,9 @@ const verifyTokenForProductSells = async (req, res, next) => {
 
             /** @new @code **/
             const moneyAdd = ((findIdProduct.price + findIdProduct.taxes + findIdProduct.ads + findIdProduct.gain) - findIdProduct.discount) * findIdProduct.count;
+            const Sells = findId.sells + moneyAdd
             const custom_money = moneyAdd + findId.money
-            req.moneyAdd = moneyAdd;
+            req.moneyAdd = Sells;
             req.custom_money = custom_money;
             req.productId = findIdProduct._id;
             /** @end @code **/
@@ -68,8 +67,9 @@ const verifyTokenForSellsCount = async (req, res, next) => {
             }
 
             const moneyAdd = ((findIdProduct.price + findIdProduct.taxes + findIdProduct.ads + findIdProduct.gain) - findIdProduct.discount) * countCustomer;
+            const Sells = findId.sells + moneyAdd
             const custom_money = moneyAdd + findId.money
-            req.moneyAdd = moneyAdd;
+            req.moneyAdd = Sells;
             req.custom_money = custom_money;
             req.productId = findIdProduct._id;
             req.product = findIdProduct;

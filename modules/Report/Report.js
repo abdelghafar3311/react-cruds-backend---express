@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+require("../Product/Product");
 // schema
 const ReportSchema = new mongoose.Schema({
     report_for: {

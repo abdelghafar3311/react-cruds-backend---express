@@ -39,6 +39,8 @@ const RoomRoutes = require("./routes/Room/room");
 const RentalRoutes = require("./routes/Rental/rental");
 const ProfileOfCustomer = require("./routes/customer/profile/profile");
 const UploadCustomerAvatar = require("./routes/customer/profile/avatar");
+const Notification = require("./routes/Notification/notify");
+const TransferMoney = require("./routes/TransferMoney/transfer");
 // Routes
 app.use("/api/auth", customerAuth);
 app.use("/api/customer", customerRoutes);
@@ -57,6 +59,8 @@ app.use("/api/owner/profile/image", UploadOwnerAvatar);
 app.use("/api/owner/area", AreaRoute);
 app.use("/api/room", RoomRoutes);
 app.use("/api/rental", RentalRoutes);
+app.use("/api/notify", Notification);
+app.use("/api/money/transfer", TransferMoney);
 // middlewares Error handler
 app.use(ErrorNotFound);
 app.use(CatchError);

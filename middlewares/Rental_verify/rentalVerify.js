@@ -1,5 +1,5 @@
 const { verifyToken } = require("../verifyToken");
-const { validPostRental, validPatchRental, validReqRentalAccept } = require("../../validations/rental.valid");
+const { validPostRental, validPatchRental, validReqRentalAccept, validDeleteRental } = require("../../validations/rental.valid");
 // modules
 const Rented = require("../../modules/Rental/Rental");
 const { Customer } = require("../../modules/Customer/Customer_Module");
@@ -73,6 +73,14 @@ const VerifyPostRental = (req, res, next) => {
             }
             if (rental && rental.isAccept === "accept") {
                 return res.status(403).json({ message: "Sorry, you can't post a rental for this room" });
+            }
+            if (rental && rental.isAccept === "reject") {
+                return res.status(403).json({ message: "Sorry, you can't post a rental for this room" });
+            }
+            // check Rental Req is find
+            const rentalReq = await RentalRequest.findOne({ Customer_Id: customer._id, Room_Id: room._id });
+            if (rentalReq) {
+                return res.status(403).json({ message: "You have a pending request to post a rental" });
             }
             // check customer money is enough
             if (customer.money < price_pay) {
@@ -149,6 +157,9 @@ const VerifyReqRentalAccept = (req, res, next) => {
                 // delete request
                 await RentalRequest.findByIdAndDelete(request._id);
                 return res.status(404).json({ message: "Rental not found" });
+            }
+            if (rental.isAccept === "accept") {
+                return res.status(403).json({ message: "You are not allowed to accept / reject this request" });
             }
             // attach values to request object
             req.ownerDB = owner;
@@ -279,12 +290,27 @@ const verifyGetAllRentals = async (req, res, next) => {
                         message: "You are not allowed to get rentals, please sign in first.",
                     });
                 }
-                // find all rentals for this customer
+
+                const ReqRental = await RentalRequest.find({ Customer_Id: profile._id }).populate("Room_Id", "nameRoom NumberRoom").lean();
+
+                // req pending
+                const ReqPending = await RentalRequest.find({ Customer_Id: profile._id, status: "pending" }).lean();
+
                 rentals = await Rented.find({ Customer_Id: profile._id })
-                    .populate("Room_Id", "startDate endDate subscriptionState")
-                    .populate("Owner_Id", "nameOwner")
-                    .populate("Area_Id", "nameArea")
+                    .populate("Room_Id", "nameRoom NumberRoom price Discount")
+                    .populate("Owner_Id", "username")
+                    .populate("Area_Id", "nameArea address")
+                    .populate("Customer_Id", "username money")
                     .lean();
+
+                // find all rentals for this customer
+                // get Requests for this customer
+                const requests = await RentalRequest.find({ Rental_Id: { $in: rentals.map((rental) => rental._id) } });
+                rentals = rentals.map((rental) => {
+                    const request = requests.find((request) => request.Rental_Id.toString() === rental._id.toString());
+                    return { ...rental, request };
+                })
+                rentals = { rentals, ReqRental };
             } else if (req.user.type === "owner") { // owner
                 profile = await Owner.findById(req.user.id);
                 if (!profile) {
@@ -292,17 +318,19 @@ const verifyGetAllRentals = async (req, res, next) => {
                 }
                 // find all rentals for this owner
                 rentals = await Rented.find({ Owner_Id: profile._id })
-                    .populate("Room_Id", "startDate endDate subscriptionState")
-                    .populate("Area_Id", "nameArea")
+                    .populate("Room_Id", "nameRoom NumberRoom")
+                    .populate("Area_Id", "nameArea address")
                     .populate("Customer_Id", "username")
                     .lean();
             } else { // invalid user
                 return res.status(403).json({ message: "Invalid user type" });
             }
             // check rentals
-            if (!rentals || rentals.length === 0) {
-                return res.status(404).json({ message: "No rentals found" });
-            }
+            // if (!rentals || rentals.length === 0) {
+            //     req.rentals = [];
+            //     req.profile = profile;
+            //     return next();
+            // }
             // attach rentals and profile to req
             req.rentals = rentals;
             req.profile = profile;
@@ -344,6 +372,7 @@ const VerifyDeleteCustomerRental = async (req, res, next) => {
             // attach values to request object 
             req.customer = customer;
             req.rental = rental;
+            req.room = await Room.findById(rental.Room_Id);
             next();
         } catch (error) {
             console.error("Middleware error:", error);
@@ -356,6 +385,11 @@ const VerifyDeleteCustomerRental = async (req, res, next) => {
 const VerifyDeleteOwnerRental = async (req, res, next) => {
     verifyToken(req, res, async () => {
         try {
+            const { error, value } = validDeleteRental(req.body);
+            if (error) {
+                return res.status(400).json({ message: error.details[0].message });
+            }
+            req.body = value;
             // check owner
             const owner = await Owner.findById(req.owner.id);
             if (!owner) {
@@ -370,13 +404,11 @@ const VerifyDeleteOwnerRental = async (req, res, next) => {
             if (owner._id.toString() !== rental.Owner_Id.toString()) {
                 return res.status(403).json({ message: "You are not allowed to delete a rental for this room" });
             }
-            // check rental isDeleted false
-            if (rental.isDeleted) {
-                return res.status(403).json({ message: "Rental will delete" });
-            }
             // attach values to request object 
             req.owner = owner;
             req.rental = rental;
+            req.customer = rental.Customer_Id !== null ? await Customer.findById(rental.Customer_Id) : null;
+            req.room = await Room.findById(rental.Room_Id);
             next();
         } catch (error) {
             console.error("Middleware error:", error);

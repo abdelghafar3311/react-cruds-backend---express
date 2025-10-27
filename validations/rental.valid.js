@@ -28,8 +28,18 @@ const validReqRentalAccept = (obj) => {
     return schema.validate(obj);
 };
 
+// valid delete rental with owner
+
+const validDeleteRental = (obj) => {
+    const schema = Joi.object({
+        isDeleted: Joi.boolean().required(),
+    });
+    return schema.validate(obj);
+};
+
 module.exports = {
     validPostRental,
     validPatchRental,
-    validReqRentalAccept
+    validReqRentalAccept,
+    validDeleteRental
 };

@@ -48,7 +48,7 @@ const RentedSchema = new mongoose.Schema({
     Customer_Id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Customer",
-        required: true
+        default: null
     }
 });
 

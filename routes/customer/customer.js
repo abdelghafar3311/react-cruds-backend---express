@@ -1,10 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { verifyTokenWithCustomerToUpdate } = require("../../middlewares/verifyCustomer")
+const { verifyToken } = require("../../middlewares/verifyToken")
 // controllers
-const { UpdateCustomerController } = require("../../controllers/customer/customer.controller")
+const { UpdateCustomerController, GetCustomerController } = require("../../controllers/customer/customer.controller")
 
+// get
+router.get("/get", verifyToken, GetCustomerController);
 
-router.put("/:id", verifyTokenWithCustomerToUpdate, UpdateCustomerController);
+// update
+router.put("/update", verifyToken, UpdateCustomerController);
 
 module.exports = router;

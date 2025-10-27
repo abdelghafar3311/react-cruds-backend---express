@@ -14,6 +14,12 @@ const CreateDeleteToken = (data, expire) => {
     })
 }
 
+const CreateTokenNotifiesRead = (data, expire = "2h") => {
+    return jwt.sign(data, secreteKeyRental, {
+        expiresIn: expire
+    })
+}
+
 const CreateTokenRental = (data, expire = "2h") => {
     return jwt.sign(data, secreteKeyRental, {
         expiresIn: expire
@@ -23,5 +29,6 @@ const CreateTokenRental = (data, expire = "2h") => {
 module.exports = {
     CreateToken,
     CreateDeleteToken,
-    CreateTokenRental
+    CreateTokenRental,
+    CreateTokenNotifiesRead
 };

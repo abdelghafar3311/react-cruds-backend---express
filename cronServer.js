@@ -5,13 +5,15 @@ const {
     RentalSubscriptLive,
     DeleteAreaLive,
     DeleteRoomLive,
-    DeleteRentalLive
+    DeleteRentalLive,
+    DeleteOwnerAccountLive,
+    TransNotifiesFromReadToDelete,
+    DeleteNotifyWillDelete
 } = require("./services/security");
 
 function startCronJob() {
     // Area
     cron.schedule("*/1 * * * *", async () => {
-        console.log("Cron job is running...");
         try {
             await RentalReqWillAccept();
             await Promise.all([
@@ -23,7 +25,12 @@ function startCronJob() {
                 DeleteRoomLive(),
             ])
             await Promise.all([
-                DeleteRentalLive()
+                DeleteRentalLive(),
+                DeleteOwnerAccountLive()
+            ])
+            await Promise.all([
+                TransNotifiesFromReadToDelete(),
+                DeleteNotifyWillDelete()
             ])
         } catch (error) {
             console.error("Cron job error:", error);

@@ -10,12 +10,35 @@ const { Customer } = require("../../modules/Customer/Customer_Module")
 
 const GetProductsController = async (req, res) => {
     try {
-        const products = await Product.find({ customer_id: req.customer.id }).select('-customer_id');
+        const products = await Product.find({ customer_id: req.customer.id }).select('-customer_id').populate({
+            path: 'Rental_Id',
+            populate: {
+                path: "Room_Id",
+                select: "nameRoom"
+            }
+        });
         res.status(200).json(products);
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error })
     }
 };
+
+/**
+ * @method Get 
+ * @description  get products 
+ * @route /api/product
+ * @access private
+ **/
+
+const GetProductsByIdController = async (req, res) => {
+    try {
+        const product = req.product;
+        res.status(200).json(product);
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error", error })
+    }
+};
+
 
 /**
  * @method Put 
@@ -97,5 +120,6 @@ const SearchProductController = async (req, res) => {
 module.exports = {
     GetProductsController,
     UpdateProductController,
-    SearchProductController
+    SearchProductController,
+    GetProductsByIdController
 };

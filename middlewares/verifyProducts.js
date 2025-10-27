@@ -115,6 +115,31 @@ const verifyTokenForProductPut = async (req, res, next) => {
     })
 }
 
+// put verify product
+const verifyTokenForProductGetById = async (req, res, next) => {
+    verifyToken(req, res, async () => {
+        try {
+            // check id
+            const findId = await Customer.findById(req.customer.id);
+            if (!findId) {
+                return res.status(400).json({ message: "Your account could not be found in our records. Please try again or contact support." });
+            }
+            // check id === customer id
+            const findIdProduct = await Product.findOne({ _id: req.params.id, customer_id: req.customer.id })
+            if (!findIdProduct) {
+                return res.status(403).json({ message: "You are not allowed to update product for another account." });
+            }
+
+            // req product
+            req.product = findIdProduct;
+            next();
+        } catch (error) {
+            console.error("middleware error:", error);
+            return res.status(500).json({ message: "Internal server error", error: error.message });
+        }
+    })
+}
+
 // verify for search product
 const verifyTokenForProductSearch = async (req, res, next) => {
     verifyToken(req, res, async () => {
@@ -143,5 +168,6 @@ const verifyTokenForProductSearch = async (req, res, next) => {
 module.exports = {
     verifyTokenForProductsGet,
     verifyTokenForProductPut,
-    verifyTokenForProductSearch
+    verifyTokenForProductSearch,
+    verifyTokenForProductGetById
 };

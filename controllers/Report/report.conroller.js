@@ -15,7 +15,7 @@ const GetAllReportsController = async (req, res) => {
         const customer = await Customer.findById(req.customer.id);
         if (!customer) return res.status(404).json({ message: "Error in customer, you not found" });
 
-        const reports = await Report.find({ customer_id: customer._id });
+        const reports = await Report.find({ customer_id: customer._id }).lean();
         return res.status(200).json(reports);
     } catch (error) {
         console.error(error);

@@ -9,11 +9,13 @@ const postCustomerProfileSchema = (obj) => {
             .trim(),
         phone: Joi.string()
             .pattern(/^\+?\d{10,15}$/)
-            .trim(),
+            .trim().required(),
         address: Joi.string()
-            .trim(),
+            .trim().default("").allow(""),
         description: Joi.string()
-            .trim().allow(""),
+            .trim().allow("").default(""),
+        status: Joi.boolean()
+            .default(true),
     });
 
     return schema.validate(obj, { abortEarly: false, stripUnknown: true });
@@ -33,6 +35,8 @@ const validateCustomerProfileUpdate = (obj) => {
             .trim(),
         description: Joi.string()
             .trim().allow(""),
+        status: Joi.boolean()
+            .default(true)
     });
 
     return schema.validate(obj, { abortEarly: false, stripUnknown: true });

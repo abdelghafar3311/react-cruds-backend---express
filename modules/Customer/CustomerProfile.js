@@ -10,13 +10,14 @@ const ProfileSchema = new mongoose.Schema({
     },
     Avatar: {
         type: String,
-        default: "images/customer.png"
+        default: "https://raw.githubusercontent.com/abdelghafar3311/upload_images_express_curds/main/uploads/1758208200002-avatar.png"
     },
     phone: {
         type: String,
         minLength: 10,
         maxLength: 15,
-        trim: true
+        trim: true,
+        required: false
     },
     address: {
         type: String,
@@ -24,6 +25,10 @@ const ProfileSchema = new mongoose.Schema({
     },
     description: {
         type: String
+    },
+    status: {
+        type: Boolean,
+        default: true
     },
     Customer_Id: {
         type: mongoose.Schema.Types.ObjectId,

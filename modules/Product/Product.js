@@ -52,8 +52,9 @@ const ProductSchema = new mongoose.Schema({
         required: true
     }, Rental_Id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Rental",
-        required: false
+        ref: "Rented",
+        required: false,
+        default: null
     }
 }, { timestamps: true })
 // this make name product is unique only in the same customer

@@ -12,7 +12,6 @@ const { Report } = require("../../modules/Report/Report");
 
 const SellsProductIdController = async (req, res) => {
     try {
-        /** @new @code **/
         // update customer
         const customer = await Customer.findByIdAndUpdate(req.customer.id, {
             $set: {
@@ -66,13 +65,14 @@ const SellsProductCountController = async (req, res) => {
             const calc = Math.abs(req.product.count - req.count);
             const update = await Product.findByIdAndUpdate(req.productId, {
                 $set: {
-                    count: calc,
-                    isSold: true
+                    count: calc
                 }
             }, { new: true });
             const { count } = update._doc;
             return res.status(200).json({ message: "Sell product successful", count, info: { money, sells }, report })
         }
+
+        console.log("req count product: ", req.product.count, " req count: ", req.count);
 
         // here delete (sells)
         await Product.findByIdAndDelete(req.productId);

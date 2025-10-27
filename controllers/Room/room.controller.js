@@ -1,7 +1,9 @@
 // models
 const Room = require("../../modules/Room/Room");
 const Area = require("../../modules/Area/Area");
-
+const Notification = require("../../modules/Notification/Notification");
+const Rental = require("../../modules/Rental/Rental");
+const { Customer } = require("../../modules/Customer/Customer_Module");
 /**
  * @method PUT
  * @description Update room details
@@ -19,7 +21,9 @@ const UpdateRoomController = async (req, res) => {
             status: req.body.status,
             length: req.body.length,
             width: req.body.width,
-            Discount: req.body.Discount
+            Discount: req.body.Discount,
+            Duration: req.body.Duration,
+            isDeleted: req.body.isDeleted
         };
         // update room
         const updatedRoom = await Room.findByIdAndUpdate(req.room._id, updateData, { new: true });
@@ -29,8 +33,7 @@ const UpdateRoomController = async (req, res) => {
         }, { new: true });
         // return updated room
         res.status(200).json({
-            message: "Room updated successfully",
-            room: updatedRoom
+            message: "Store updated successfully"
         });
     } catch (error) {
         console.error(error);
@@ -62,7 +65,8 @@ const CreateRoomController = async (req, res) => {
             width: req.body.width,
             Area_Id: req.area._id,
             Owner_Id: req.owner_id,
-            Discount: req.body.Discount
+            Discount: req.body.Discount,
+            Duration: req.body.Duration
         });
 
         // save room
@@ -70,7 +74,7 @@ const CreateRoomController = async (req, res) => {
 
         // return created room
         res.status(201).json({
-            message: "Room created successfully",
+            message: "Store created successfully",
             room: savedRoom
         });
     } catch (error) {
@@ -88,10 +92,31 @@ const CreateRoomController = async (req, res) => {
 
 const GetOwnersRoomsController = async (req, res) => {
     try {
+        const rooms = await Room.find({ Owner_Id: req.owner.id }).populate("Area_Id", "nameArea maxRooms status address");
         return res.status(200).json({
-            message: "Rooms fetched successfully",
-            rooms: req.rooms // assuming rooms are populated in owner model
+            message: "Stores fetched successfully",
+            rooms: rooms // assuming rooms are populated in owner model
         }); a
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal Server Error" })
+    }
+}
+
+/**
+ * @method GET
+ * @description Get one rooms for owner
+ * @route /room/owner/rooms/:id
+ * @access Private
+ * */
+
+const GetOneRoomController = async (req, res) => {
+    try {
+        const room = await Room.findById(req.params.id).populate("Area_Id", "nameArea maxRooms status address");
+        return res.status(200).json({
+            message: "Stores fetched successfully",
+            room: room // assuming rooms are populated in owner model
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal Server Error" })
@@ -108,7 +133,7 @@ const GetOwnersRoomsController = async (req, res) => {
 const GetCustomersRoomsController = async (req, res) => {
     try {
         return res.status(200).json({
-            message: "Available rooms fetched successfully",
+            message: "Available Stores fetched successfully",
             rooms: req.rooms // assuming rooms are populated in customer model
         });
     } catch (error) {
@@ -134,6 +159,21 @@ const DeleteRoomController = async (req, res) => {
             return res.status(404).json({ message: "Room not found" });
         }
 
+        if (update.RentalType === "rental" || update.RentalType === "expire") {
+            const getRental = await Rental.findOne({ Room_Id: update._id });
+            const customer = await Customer.findById(getRental.Customer_Id);
+
+            // make notification for customer
+            const notification = new Notification({
+                notifyType: "warn",
+                notifyTitle: "Room Subscription",
+                notifyMessage: "Store: " + update.nameRoom + " has been deleted when your rental will be expire",
+                User_Type: "Customer",
+                User_Id: customer._id
+            });
+            await notification.save();
+        }
+
         res.status(200).json({ message: "Room is ready for delete", area: update });
     } catch (error) {
         console.error(error);
@@ -146,5 +186,6 @@ module.exports = {
     CreateRoomController,
     GetOwnersRoomsController,
     GetCustomersRoomsController,
-    DeleteRoomController
+    DeleteRoomController,
+    GetOneRoomController
 }

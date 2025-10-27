@@ -23,9 +23,14 @@ const validateMoney = (obj) => {
 // validation update money
 const validateUpdateMoney = (obj) => {
     const schema = Joi.object({
-        money: Joi.number().required().messages({
+        money: Joi.number().messages({
             "number.base": "The money must be a number.",
-            "any.required": "The money field is required."
+        }),
+        sells: Joi.number().messages({
+            "number.base": "The sells must be a number."
+        }),
+        buys: Joi.number().messages({
+            "number.base": "The buys must be a number."
         })
     })
 

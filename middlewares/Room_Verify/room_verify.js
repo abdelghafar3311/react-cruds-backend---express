@@ -4,6 +4,7 @@ const { validUpdateRoom, validCreateRoom } = require("../../validations/room.val
 const Owner = require("../../modules/Owners/Owner");
 const Room = require("../../modules/Room/Room");
 const Area = require("../../modules/Area/Area");
+const ProfileOwner = require("../../modules/Owners/OwnerProfile");
 const { Customer } = require("../../modules/Customer/Customer_Module");
 const mongoose = require("mongoose");
 // env
@@ -101,11 +102,38 @@ const getRoomsVerify = (req, res, next) => {
                 return res.status(404).json({ message: "Owner not found" });
             }
             // get rooms
-            const rooms = await Room.find({ Owner_Id: req.owner.id }).populate("Area_Id", "nameArea maxRooms status");
+            const rooms = await Room.find({ Owner_Id: req.owner.id }).populate("Area_Id", "nameArea maxRooms status address");
             if (rooms.length === 0) {
                 return res.status(404).json({ message: "No rooms found for this owner" });
             }
             req.rooms = rooms; // attach rooms to request object
+            next();
+        } catch (error) {
+            console.error("Middleware: ", error);
+            return res.status(500).json({ message: "Internal Server Error" });
+        }
+    });
+}
+
+// get Room :: for owner by id
+const getOneRoomVerify = (req, res, next) => {
+    verifyToken(req, res, async () => {
+        try {
+            // check owner
+            const owner = await Owner.findById(req.owner.id);
+            if (!owner) {
+                return res.status(404).json({ message: "Owner not found" });
+            }
+            // check id validity
+            if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+                return res.status(400).json({ message: "Invalid room ID." });
+            }
+            // get room
+            const room = await Room.findById(req.params.id).populate("Area_Id", "nameArea maxRooms status address");
+            if (!room) {
+                return res.status(404).json({ message: "Room not found" });
+            }
+            req.room = room; // attach room to request object
             next();
         } catch (error) {
             console.error("Middleware: ", error);
@@ -127,11 +155,20 @@ const getCustomerRoomsVerify = (req, res, next) => {
             const rooms = await Room.find({
                 RentalType: { $eq: "null" },
                 status: { $eq: true }
-            }).populate("Area_Id", "nameArea maxRooms status").lean();
+            }).populate("Area_Id", "nameArea address").lean();
             if (rooms.length === 0) {
                 return res.status(404).json({ message: "No available rooms found" });
             }
-            req.rooms = rooms; // attach rooms to request object
+            // get profiles from rooms
+            const profiles = await ProfileOwner.find({ Owner_Id: { $in: rooms.map(room => room.Owner_Id) } });
+            const roomsWithProfileName = rooms.map(room => {
+                const profile = profiles.find(p => p.Owner_Id.toString() === room.Owner_Id.toString());
+                return {
+                    ...room,
+                    ownerName: profile ? profile.name : "Unknown"
+                };
+            });
+            req.rooms = roomsWithProfileName; // attach rooms to request object
             next();
         } catch (error) {
             console.error("Middleware: ", error);
@@ -181,5 +218,6 @@ module.exports = {
     roomCreateVerify,
     getRoomsVerify,
     getCustomerRoomsVerify,
-    verifyRoomWillDelete
+    verifyRoomWillDelete,
+    getOneRoomVerify
 };

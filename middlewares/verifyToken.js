@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { secreteKey, secreteKeyRental } = require("../values/env");
+const { secreteKey, secreteKeyRental, secreteKeyDelete } = require("../values/env");
 
 
 // verify token middleware
@@ -38,7 +38,42 @@ const verifyRentalToken = (token) => {
     }
 };
 
+// verify delete token middleware
+const verifyNotifyReadToken = (token) => {
+    try {
+        const decoded = jwt.verify(token, secreteKeyRental);
+        return {
+            isValid: true,
+            data: decoded
+        };
+    } catch (error) {
+        return {
+            isValid: false,
+            data: null,
+            reason: error// TokenExpiredError | JsonWebTokenError
+        };
+    }
+};
+
+const verifyNotifyDeleteToken = (token) => {
+    try {
+        const decoded = jwt.verify(token, secreteKeyDelete);
+        return {
+            isValid: true,
+            data: decoded
+        };
+    } catch (error) {
+        return {
+            isValid: false,
+            data: null,
+            reason: error// TokenExpiredError | JsonWebTokenError
+        };
+    }
+};
+
 module.exports = {
     verifyToken,
-    verifyRentalToken
+    verifyRentalToken,
+    verifyNotifyReadToken,
+    verifyNotifyDeleteToken
 };

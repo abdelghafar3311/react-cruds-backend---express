@@ -45,7 +45,7 @@ const PostNewProductController = async (req, res) => {
         })
 
         await report.save();
-        res.status(201).json({ message: "success add product", Report: report });
+        res.status(201).json({ message: "success add product" });
     } catch (error) {
         if (error.code === 11000 && error.keyPattern?.nameProduct) {
             return res.status(409).json({ message: "Product name already exists. Please choose a different name." });
@@ -87,7 +87,7 @@ const PostNewProductsController = async (req, res) => {
             }).save();
         });
         const Reports = await Promise.all(reports);
-        return res.status(201).json({ message: "success save products", Reports })
+        return res.status(201).json({ message: "success save products" })
     } catch (error) {
         if (error.code === 11000 && error.keyPattern?.nameProduct) {
             return res.status(409).json({ message: "Product name already exists. Please choose a different name." });

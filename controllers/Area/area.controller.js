@@ -1,7 +1,8 @@
 // import models
 const Area = require("../../modules/Area/Area");
 const Room = require("../../modules/Room/Room");
-
+const { Customer } = require("../../modules/Customer/Customer_Module")
+const Notification = require("../../modules/Notification/Notification");
 // import create token
 const { CreateDeleteToken } = require("../../middlewares/Token");
 // service to create date
@@ -132,6 +133,23 @@ const DeleteAreaController = async (req, res) => {
 
         if (!update) {
             return res.status(404).json({ message: "Area not found" });
+        }
+
+        const rooms = await Room.find({
+            Area_Id: update._id,
+            RentalType: { $in: ["rental", "expire"] }
+        });
+        for (const room of rooms) {
+            const customer = await Customer.findById(room.Customer_Id);
+            // make notification for customer
+            const notification = new Notification({
+                notifyType: "warn",
+                notifyTitle: "Area will delete",
+                notifyMessage: `The area where your store in room "${room.nameRoom}" has been rented will be deleted soon.`,
+                User_Type: "Customer",
+                User_Id: customer._id
+            });
+            await notification.save();
         }
 
         res.status(200).json({ message: "Area is ready for delete", area: update });

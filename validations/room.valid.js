@@ -10,8 +10,9 @@ const validUpdateRoom = (obj) => {
         status: Joi.boolean().default(false).optional(),
         length: Joi.number().min(1).max(100).default(5).optional(),
         width: Joi.number().min(1).max(100).default(4).optional(),
-        Discount: Joi.number().min(50).default(0).optional(),
+        Discount: Joi.number().min(50).default(0).optional().allow(0),
         Duration: Joi.string().valid("m", "h", "d", "M", "y").default("M").optional(),
+        isDeleted: Joi.boolean().default(false).optional(),
     });
 
     return schema.validate(obj);
@@ -28,7 +29,7 @@ const validCreateRoom = (obj) => {
         length: Joi.number().min(1).max(100).default(5).optional(),
         width: Joi.number().min(1).max(100).default(4).optional(),
         Area_Id: Joi.string().required(),
-        Discount: Joi.number().min(50).default(0).optional(),
+        Discount: Joi.number().min(50).default(0).optional().allow(0),
         Duration: Joi.string().valid("m", "h", "d", "M", "y").default("M").optional(),
     });
     return schema.validate(obj);

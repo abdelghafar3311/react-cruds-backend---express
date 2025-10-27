@@ -51,6 +51,28 @@ const OwnerController = async (req, res) => {
     }
 };
 
+/**
+ * @method GET
+ * @description  get owner
+ * @route /api/owner/get
+ * @access private
+ **/
+
+const getOwnerController = async (req, res) => {
+    try {
+        const findOwner = await Owner.findById(req.owner.id);
+        if (!findOwner) {
+            return res.status(404).json({ message: "owner not found" });
+        }
+        const { password, ...other } = findOwner._doc;
+        return res.status(200).json({ ...other });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal Server Error" })
+    }
+};
+
 module.exports = {
-    OwnerController
+    OwnerController,
+    getOwnerController
 }

@@ -18,7 +18,7 @@ const verifyProfileData = async (req, res, next) => {
             }
 
             // check if customer profile already exists
-            const existingProfile = await CustomerProfile.findOne({ Customer_Id: req.customer._id }).lean();
+            const existingProfile = await CustomerProfile.exists({ Customer_Id: req.customer.id });
             if (existingProfile) {
                 return res.status(400).json({ message: "customer profile already exists" });
             }

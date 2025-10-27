@@ -20,6 +20,11 @@ const RentalRequestSchema = new mongoose.Schema({
         ref: "Customer",
         required: true
     },
+    Room_Id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Room",
+        required: true
+    },
     Owner_Id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Owner",
@@ -31,6 +36,11 @@ const RentalRequestSchema = new mongoose.Schema({
     },
     DeleteToken: {
         type: String
+    },
+    status: {
+        type: String,
+        enum: ["pending", "reject"],
+        default: "pending"
     }
 
 }, { timestamps: true });

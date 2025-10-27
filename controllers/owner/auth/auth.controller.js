@@ -37,7 +37,7 @@ const RegisterController = async (req, res) => {
         });
 
         const result = await owner.save();
-        const token = CreateToken({ id: owner._id, username: owner.username, email: owner.email, type: "owner" }, "1h")
+        const token = CreateToken({ id: owner._id, username: owner.username, email: owner.email, type: "owner" }, "1d")
         const { password, ...other } = result._doc;
         return res.status(201).json({ ...other, token })
     } catch (error) {
@@ -72,7 +72,7 @@ const LoginController = async (req, res) => {
         const comparePassword = await bcrypt.compare(req.body.password, owner.password);
         if (!comparePassword) return res.status(400).json({ message: "The email or password is wrong" });
         // create token
-        const token = CreateToken({ id: owner._id, username: owner.username, email: owner.email, type: "owner" }, "1h");
+        const token = CreateToken({ id: owner._id, username: owner.username, email: owner.email, type: "owner" }, "1d");
         // take password from data
         const { password, ...other } = owner._doc;
         // send response
