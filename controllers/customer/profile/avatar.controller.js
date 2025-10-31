@@ -40,7 +40,7 @@ const ClearImageController = async (req, res) => {
     try {
         const updateProfile = await CustomerProfile.findByIdAndUpdate(req.profile._id, {
             $set: {
-                Avatar: "images/customer.png"
+                Avatar: "https://raw.githubusercontent.com/abdelghafar3311/upload_images_express_curds/main/uploads/1758208200002-avatar.png"
             }
         }, { new: true });
         const { Avatar } = updateProfile._doc

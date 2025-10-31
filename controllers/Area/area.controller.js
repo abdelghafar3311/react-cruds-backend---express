@@ -27,7 +27,7 @@ const CreateAreaController = async (req, res) => {
         // create rooms
         for (let i = 0; i < areaData.maxRooms; i++) {
             const newRoom = new Room({
-                nameRoom: `Room ${i + 1}`,
+                nameRoom: `Store ${i + 1}`,
                 NumberRoom: i + 1,
                 Area_Id: newArea._id,
                 Owner_Id: areaData.Owner_Id
@@ -83,9 +83,6 @@ const GetAreasController = async (req, res) => {
     try {
         const query = req.query.q
         const areas = await Area.find({ Owner_Id: req.owner.id, nameArea: { $regex: query, $options: "i" } });
-        if (areas.length === 0) {
-            return res.status(404).json({ message: "No areas found for this owner." });
-        }
         res.status(200).json(areas);
     } catch (error) {
         console.error(error);

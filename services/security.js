@@ -80,7 +80,8 @@ const RentalSubscriptLive = async () => {
                 if (!isValid) {
                     await Rental.findByIdAndUpdate(rental._id, { $set: { subscriptionState: "expired" } });
                     // update room to expire
-                    const room = await Room.updateOne({ _id: rental.Room_Id }, { $set: { RentalType: "expire" } });
+                    await Room.updateOne({ _id: rental.Room_Id }, { $set: { RentalType: "expire" } });
+                    const room = await Room.findById(rental.Room_Id);
                     // create notify for customer and owner
                     const notifyCustomer = new Notification({
                         notifyType: "info",

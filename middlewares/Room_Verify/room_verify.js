@@ -103,9 +103,6 @@ const getRoomsVerify = (req, res, next) => {
             }
             // get rooms
             const rooms = await Room.find({ Owner_Id: req.owner.id }).populate("Area_Id", "nameArea maxRooms status address");
-            if (rooms.length === 0) {
-                return res.status(404).json({ message: "No rooms found for this owner" });
-            }
             req.rooms = rooms; // attach rooms to request object
             next();
         } catch (error) {
@@ -156,9 +153,6 @@ const getCustomerRoomsVerify = (req, res, next) => {
                 RentalType: { $eq: "null" },
                 status: { $eq: true }
             }).populate("Area_Id", "nameArea address").lean();
-            if (rooms.length === 0) {
-                return res.status(404).json({ message: "No available rooms found" });
-            }
             // get profiles from rooms
             const profiles = await ProfileOwner.find({ Owner_Id: { $in: rooms.map(room => room.Owner_Id) } });
             const roomsWithProfileName = rooms.map(room => {

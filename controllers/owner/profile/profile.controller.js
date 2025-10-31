@@ -47,11 +47,21 @@ const CreateProfileController = async (req, res) => {
 
 const UpdateProfileController = async (req, res) => {
     try {
-        const updatedProfile = await OwnerProfile.findByIdAndUpdate(req.profile._id, {
-            $set: {
-                ...req.body
-            }
-        }, { new: true });
+        const updateData = {};
+
+        if (req.body.name) updateData.name = req.body.name;
+        if (req.body.money) updateData.money = req.body.money;
+        if (req.body.Avatar) updateData.Avatar = req.body.Avatar;
+        if (req.body.phone) updateData.phone = req.body.phone;
+        if (req.body.address) updateData.address = req.body.address;
+        if (req.body.description) updateData.description = req.body.description;
+        if (req.body.isDeleted !== undefined) updateData.isDeleted = req.body.isDeleted;
+
+        const updatedProfile = await OwnerProfile.findByIdAndUpdate(
+            req.profile._id,
+            { $set: updateData },
+            { new: true }
+        );
 
         return res.status(200).json({ message: "Profile updated successfully", profile: updatedProfile });
     } catch (error) {

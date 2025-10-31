@@ -32,7 +32,7 @@ const UpdateCustomerController = async (req, res) => {
         // update
         const UpdateCustomer = await Customer.findByIdAndUpdate(req.customer.id, {
             $set: {
-                email: req.body.email,
+                username: req.body.username,
                 password: req.body.password,
             }
         }, { new: true });

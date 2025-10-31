@@ -23,8 +23,9 @@ const postProfileSchema = (obj) => {
     return schema.validate(obj, { abortEarly: false, stripUnknown: true });
 }
 
+
 // validate profile when put profile
-const validateProfileUpdate = (obj) => {
+const validateProfileOwnerUpdate = (obj) => {
     const schema = Joi.object({
         name: Joi.string()
             .min(3)
@@ -40,7 +41,9 @@ const validateProfileUpdate = (obj) => {
         description: Joi.string()
             .trim().allow(""),
         status: Joi.boolean()
-            .default(true)
+            .default(true),
+        isDeleted: Joi.boolean()
+            .default(false)
     });
 
     return schema.validate(obj, { abortEarly: false, stripUnknown: true });
@@ -48,5 +51,5 @@ const validateProfileUpdate = (obj) => {
 
 module.exports = {
     postProfileSchema,
-    validateProfileUpdate
+    validateProfileOwnerUpdate
 };

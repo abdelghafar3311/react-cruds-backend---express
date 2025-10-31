@@ -32,7 +32,7 @@ const OwnerController = async (req, res) => {
         // update
         const UpdateOwner = await Owner.findByIdAndUpdate(req.owner.id, {
             $set: {
-                email: req.body.email,
+                username: req.body.username,
                 password: req.body.password,
             }
         }, { new: true });

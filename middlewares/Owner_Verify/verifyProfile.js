@@ -1,4 +1,4 @@
-const { postProfileSchema, validateProfileUpdate } = require("../../validations/profile.valid");
+const { postProfileSchema, validateProfileOwnerUpdate } = require("../../validations/profile.valid");
 const OwnerProfile = require("../../modules/Owners/OwnerProfile");
 const Owner = require("../../modules/Owners/Owner");
 const { verifyToken } = require("../verifyToken");
@@ -37,7 +37,7 @@ const verifyProfileData = async (req, res, next) => {
 const verifyProfileUpdate = async (req, res, next) => {
     verifyToken(req, res, async () => {
         try {
-            const { error, value } = validateProfileUpdate(req.body);
+            const { error, value } = validateProfileOwnerUpdate(req.body);
             if (error) {
                 return res.status(400).json({ message: error.details[0].message });
             }

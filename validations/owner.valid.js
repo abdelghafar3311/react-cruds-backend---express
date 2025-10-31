@@ -24,7 +24,7 @@ const validateOwnerLoginSchema = (obj) => {
 // valid update owner
 const validateOwnerUpdateSchema = (obj) => {
     const schema = Joi.object({
-        email: Joi.string().email(),
+        username: Joi.string().min(3).max(200).trim(),
         password: Joi.string().min(6),
     });
 
