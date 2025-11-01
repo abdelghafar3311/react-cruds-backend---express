@@ -1,7 +1,7 @@
 # URL MongoDB
 MONGODB_URL= Data Base
 # System in network
-PORT=8000
+PORT=5000
 HOST="192.168.1.138"
 
 # jwt secrete key
