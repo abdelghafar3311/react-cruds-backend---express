@@ -41,6 +41,7 @@ const ProfileOfCustomer = require("./routes/customer/profile/profile");
 const UploadCustomerAvatar = require("./routes/customer/profile/avatar");
 const Notification = require("./routes/Notification/notify");
 const TransferMoney = require("./routes/TransferMoney/transfer");
+const SysRouter = require("./routes/SYS/sys");
 // Routes
 app.use("/api/auth", customerAuth);
 app.use("/api/customer", customerRoutes);
@@ -61,6 +62,7 @@ app.use("/api/room", RoomRoutes);
 app.use("/api/rental", RentalRoutes);
 app.use("/api/notify", Notification);
 app.use("/api/money/transfer", TransferMoney);
+app.use("/api/sys00", SysRouter);
 // middlewares Error handler
 app.use(ErrorNotFound);
 app.use(CatchError);

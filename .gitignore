@@ -1,5 +1,7 @@
 #folders
 node_modules
+.history
+.git
 
 #files
 .env
