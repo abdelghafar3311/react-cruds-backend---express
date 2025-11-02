@@ -67,5 +67,8 @@ app.use("/api/sys00", SysRouter);
 app.use(ErrorNotFound);
 app.use(CatchError);
 
+app.get("/", (req, res) => {
+    res.send("Hello World!");
+});
 
 app.listen(PORT || 8080, () => `Server Run in port ${PORT}`);
