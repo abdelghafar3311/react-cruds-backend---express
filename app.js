@@ -15,7 +15,15 @@ app.use(express.urlencoded({ extended: true }));
 const { PORT } = require("./values/env");
 // connection data base
 const connectDB = require("./config/connectDB");
-connectDB();
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        console.error("Database connection error:", err);
+        res.status(500).json({ message: "Database connection failed" });
+    }
+});
 // start cron job
 const startCronJob = require("./cronServer");
 startCronJob();
