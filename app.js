@@ -12,7 +12,7 @@ app.use(express.json())
 // use urlencoded in express
 app.use(express.urlencoded({ extended: true }));
 // exports values #env
-const { PORT, HOST } = require("./values/env");
+const { PORT } = require("./values/env");
 // connection data base
 const connectDB = require("./config/connectDB");
 connectDB();
@@ -68,4 +68,4 @@ app.use(ErrorNotFound);
 app.use(CatchError);
 
 
-app.listen(PORT, HOST, () => console.log(`Server Run in host ${HOST} in port ${PORT}`));
+app.listen(PORT || 8080, () => `Server Run in port ${PORT}`);
