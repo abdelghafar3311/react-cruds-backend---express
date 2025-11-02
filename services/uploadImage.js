@@ -1,5 +1,5 @@
 // githubUpload.js
-const { Octokit } = require("@octokit/rest");
+
 // uploadConfig.js
 const multer = require('multer');
 const path = require('path');
@@ -21,16 +21,21 @@ const upload = multer({
 });
 
 
-const octokit = new Octokit({
-    auth: GITHUB_TOKEN_UPLOAD
-});
+
 
 async function uploadToGitHub(fileBuffer, fileName) {
-    const owner = GITHUB_USERNAME;
-    const repo = GITHUB_REPO;
+    const { Octokit } = await import("@octokit/rest");
+
+    const octokit = new Octokit({
+        auth: process.env.GITHUB_TOKEN_UPLOAD
+    });
+
+    const owner = process.env.GITHUB_USERNAME;
+    const repo = process.env.GITHUB_REPO;
     const path = `uploads/${Date.now()}-${fileName}`;
 
     const content = fileBuffer.toString("base64");
+
     const response = await octokit.repos.createOrUpdateFileContents({
         owner,
         repo,
@@ -41,6 +46,7 @@ async function uploadToGitHub(fileBuffer, fileName) {
 
     return `https://raw.githubusercontent.com/${owner}/${repo}/main/${path}`;
 }
+
 
 
 
