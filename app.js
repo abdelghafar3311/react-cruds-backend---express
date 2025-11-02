@@ -2,6 +2,18 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+// functions security
+const {
+    RentalReqWillAccept,
+    RentalReqWillDelete,
+    RentalSubscriptLive,
+    DeleteAreaLive,
+    DeleteRoomLive,
+    DeleteRentalLive,
+    DeleteOwnerAccountLive,
+    TransNotifiesFromReadToDelete,
+    DeleteNotifyWillDelete
+} = require("./services/security");
 // require middlewares files
 const { ErrorNotFound, CatchError } = require("./middlewares/errors")
 const GetRequest = require("./middlewares/getRequest");
@@ -29,6 +41,26 @@ const startCronJob = require("./cronServer");
 startCronJob();
 // Get Request middleware
 app.use(GetRequest);
+// security functions
+app.use(async (req, res, next) => {
+    try {
+        await Promise.all([
+            RentalReqWillAccept(),
+            RentalReqWillDelete(),
+            RentalSubscriptLive(),
+            DeleteAreaLive(),
+            DeleteRoomLive(),
+            DeleteRentalLive(),
+            DeleteOwnerAccountLive(),
+            TransNotifiesFromReadToDelete(),
+            DeleteNotifyWillDelete()
+        ])
+        next();
+    } catch (err) {
+        console.error("Security error:", err);
+        res.status(500).json({ message: "Security error" });
+    }
+})
 // GET routes path
 const customerRoutes = require("./routes/customer/customer");
 const customerAuth = require("./routes/customer/auth/auth");
