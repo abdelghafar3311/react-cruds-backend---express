@@ -56,6 +56,7 @@ const UpdateProfileController = async (req, res) => {
         if (req.body.address) updateData.address = req.body.address;
         if (req.body.description) updateData.description = req.body.description;
         if (req.body.isDeleted !== undefined) updateData.isDeleted = req.body.isDeleted;
+        if (req.body.status !== undefined) updateData.status = req.body.status;
 
         const updatedProfile = await OwnerProfile.findByIdAndUpdate(
             req.profile._id,
