@@ -22,28 +22,20 @@ const addTimeToDate = (baseDate, str) => {
     const newDate = moment(baseDate).tz("Africa/Cairo");
 
     switch (unit) {
-        case 's': newDate.setSeconds(newDate.getSeconds() + value); break;
-        case 'm': newDate.setMinutes(newDate.getMinutes() + value); break;
-        case 'h': newDate.setHours(newDate.getHours() + value); break;
-        case 'd': newDate.setDate(newDate.getDate() + value); break;
-        case 'M': newDate.setMonth(newDate.getMonth() + value); break; // months
-        case 'y': newDate.setFullYear(newDate.getFullYear() + value); break; // years
+        case 's': newDate.add(value, 'seconds'); break;
+        case 'm': newDate.add(value, 'minutes'); break;
+        case 'h': newDate.add(value, 'hours'); break;
+        case 'd': newDate.add(value, 'days'); break;
+        case 'M': newDate.add(value, 'months'); // months
+        case 'y': newDate.add(value, 'years'); break; // years
     }
 
-    const day = String(newDate.getDate()).padStart(2, '0');
-    const month = String(newDate.getMonth() + 1).padStart(2, '0');
-    const year = newDate.getFullYear();
-
-    let hours = newDate.getHours();
-    const minutes = String(newDate.getMinutes()).padStart(2, '0');
-    const seconds = String(newDate.getSeconds()).padStart(2, '0');
-
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12; // 0 → 12
+    const formateDate = newDate.format('YYYY-MM-DD');
+    const formateTime = newDate.format('HH:mm A');
 
     return {
         error: null,
-        result: `${day}/${month}/${year} ${hours}:${seconds > 1 ? +minutes + 1 : minutes}:00 ${ampm}`
+        result: `${formateDate} ${formateTime}`
     };
 };
 
