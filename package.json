@@ -19,6 +19,7 @@
     "joi": "^17.13.3",
     "joi-password-complexity": "^5.2.0",
     "jsonwebtoken": "^9.0.2",
+    "moment-timezone": "^0.6.0",
     "mongoose": "^8.16.4",
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",

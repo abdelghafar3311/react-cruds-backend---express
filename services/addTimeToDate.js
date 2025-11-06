@@ -1,3 +1,4 @@
+const moment = require("moment-timezone");
 
 const addTimeToDate = (baseDate, str) => {
     const regex = /^(\d+)([smhdyM])$/; // M = months, y = years
@@ -18,7 +19,7 @@ const addTimeToDate = (baseDate, str) => {
         return { error: "Invalid time unit, must be one of: s, m, h, d, M, y.", result: null };
     }
 
-    const newDate = new Date(baseDate);
+    const newDate = moment(baseDate).tz("Africa/Cairo");
 
     switch (unit) {
         case 's': newDate.setSeconds(newDate.getSeconds() + value); break;
